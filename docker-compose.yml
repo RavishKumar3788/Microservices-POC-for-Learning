@@ -14,6 +14,79 @@ services:
     networks:
       - react-net
 
+  mongodb:
+    image: mongo:latest
+    container_name: mongo-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - react-net
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - react-net
+    restart: unless-stopped
+
+  elasticsearch:
+    image: elasticsearch:7.10.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - react-net
+    restart: unless-stopped
+
+  logstash:
+    image: logstash:7.10.1
+    container_name: logstash
+    ports:
+      - "5044:5044"
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    volumes:
+      - logstash_data:/usr/share/logstash/data
+    depends_on:
+      - elasticsearch
+    networks:
+      - react-net
+    restart: unless-stopped
+
+  kibana:
+    image: kibana:7.10.1
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - react-net
+    restart: unless-stopped
+
 networks:
   react-net:
     driver: bridge
+
+volumes:
+  mongodb_data:
+  rabbitmq_data:
+  elasticsearch_data:
+  logstash_data:
