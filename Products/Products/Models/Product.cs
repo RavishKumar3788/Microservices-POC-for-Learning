@@ -7,6 +7,7 @@ namespace Products.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
+        [BsonIgnoreIfDefault]
         public string Id { get; set; } = null!;
 
         [BsonElement("name")]

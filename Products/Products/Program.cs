@@ -14,16 +14,19 @@ namespace Products
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Configure settings from appsettings.json
+            var mongoDbSettings = builder.Configuration.GetSection("MongoDb").Get<MongoDbSettings>();
+            var elasticSettings = builder.Configuration.GetSection("ElasticConfiguration").Get<ElasticConfiguration>();
+
+            if (mongoDbSettings == null || elasticSettings == null)
+            {
+                throw new InvalidOperationException("Configuration sections 'MongoDb' or 'ElasticConfiguration' are missing or invalid.");
+            }
+
             // Configure Serilog with Elasticsearch
-            ConfigureLogging(builder);
+            ConfigureLogging(builder, elasticSettings);
 
             // Add MongoDB settings
-            var mongoDbSettings = new MongoDbSettings
-            {
-                ConnectionString = "mongodb://mongodb:27017",
-                DatabaseName = "ProductsDb",
-                CollectionName = "Products"
-            };
             builder.Services.AddSingleton(mongoDbSettings);
 
             // Add services to the container
@@ -50,19 +53,19 @@ namespace Products
             app.Run();
         }
 
-        private static void ConfigureLogging(WebApplicationBuilder builder)
+        private static void ConfigureLogging(WebApplicationBuilder builder, ElasticConfiguration elasticConfig)
         {
             var logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
                 .Enrich.WithExceptionDetails()
                 .WriteTo.Debug()
                 .WriteTo.Console()
-                .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri("http://elasticsearch:9200"))
+                .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticConfig.Uri))
                 {
                     AutoRegisterTemplate = true,
-                    IndexFormat = $"products-{DateTime.UtcNow:yyyy-MM}",
-                    NumberOfShards = 2,
-                    NumberOfReplicas = 1
+                    IndexFormat = string.Format(elasticConfig.IndexFormat, DateTime.UtcNow),
+                    NumberOfShards = elasticConfig.NumberOfShards,
+                    NumberOfReplicas = elasticConfig.NumberOfReplicas
                 })
                 .CreateLogger();
 

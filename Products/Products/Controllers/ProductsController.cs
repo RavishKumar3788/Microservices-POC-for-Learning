@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Products.Models;
 using Products.Services;
+using Products.ViewModels;
 
 namespace Products.Controllers
 {
@@ -35,7 +36,7 @@ namespace Products.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Product>> AddProduct([FromBody] Product product)
+        public async Task<ActionResult<Product>> AddProduct([FromBody] ProductViewModel productViewModel)
         {
             try
             {
@@ -45,6 +46,15 @@ namespace Products.Controllers
                     return BadRequest(ModelState);
                 }
 
+                var product = new Product
+                {
+                    Name = productViewModel.Name,
+                    Description = productViewModel.Description,
+                    Price = productViewModel.Price,
+                    Quantity = productViewModel.Quantity,
+                    CreatedAt = DateTime.UtcNow
+                };
+
                 _logger.LogInformation("Request received to add new product: {ProductName}", product.Name);
                 var addedProduct = await _productService.AddProductAsync(product);
                 _logger.LogInformation("Successfully added product with ID: {ProductId}", addedProduct.Id);
@@ -53,7 +63,7 @@ namespace Products.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while adding product: {ProductName}", product.Name);
+                _logger.LogError(ex, "Error occurred while adding product: {ProductName}", productViewModel.Name);
                 return StatusCode(500, "Internal server error");
             }
         }
