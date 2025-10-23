@@ -6,7 +6,9 @@ const Orders = () => {
       <Typography variant="h4" component="h1" gutterBottom>
         Orders
       </Typography>
-      <Typography variant="body1">View and manage your orders here.</Typography>
+      <Typography variant="body1">
+        View and manage your orders here...
+      </Typography>
     </Container>
   );
 };

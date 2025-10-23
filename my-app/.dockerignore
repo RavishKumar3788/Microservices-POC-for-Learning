@@ -42,3 +42,8 @@ LICENSE
 *.log
 *.tmp
 *.temp
+
+# Tests
+__tests__/
+*.spec.js
+*.test.js
