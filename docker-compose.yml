@@ -13,6 +13,18 @@ services:
       - NODE_ENV=production
     networks:
       - react-net
+  products-app:
+    build:
+      context: /products
+      dockerfile: Dockerfile
+    container_name: products-app
+    ports:
+      - "5001:8080" # Map host port 5001 → container port 8080
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - react-net
 
   mongodb:
     image: mongo:latest
