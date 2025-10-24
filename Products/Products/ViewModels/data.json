@@ -1,0 +1,510 @@
+[
+  {
+    "name": "Professional HD Webcam 1080p",
+    "description": "High-definition webcam with built-in noise-canceling microphone, perfect for remote work and video conferencing. Features auto-focus and low-light correction.",
+    "price": 79.99
+  },
+  {
+    "name": "Ergonomic Wireless Mouse Pro X1",
+    "description": "Comfortable wireless mouse with precision tracking and ergonomic design. Features 6 programmable buttons and long battery life.",
+    "price": 45.99
+  },
+  {
+    "name": "Ultra-Slim Mechanical Keyboard K2",
+    "description": "Compact mechanical keyboard with RGB backlight and Cherry MX switches. Perfect for gaming and professional typing.",
+    "price": 129.99
+  },
+  {
+    "name": "27-inch 4K Monitor Pro Display",
+    "description": "Professional 4K display with HDR support and 99% sRGB color accuracy. Features height-adjustable stand and multiple input options.",
+    "price": 399.99
+  },
+  {
+    "name": "Wireless Charging Pad 15W",
+    "description": "Fast wireless charging pad compatible with all Qi-enabled devices. Features LED indicator and overcharge protection.",
+    "price": 29.99
+  },
+  {
+    "name": "Elite Gaming Headset X700",
+    "description": "Premium gaming headset with 7.1 surround sound, retractable microphone, and RGB lighting. Perfect for immersive gaming experience.",
+    "price": 149.99
+  },
+  {
+    "name": "Portable SSD Pro 2TB",
+    "description": "High-speed external SSD with USB-C connection. Transfer speeds up to 2000MB/s and shock-resistant design.",
+    "price": 229.99
+  },
+  {
+    "name": "Smart LED Desk Lamp Plus",
+    "description": "Adjustable LED desk lamp with 5 color modes and 10 brightness levels. Features touch controls and USB charging port.",
+    "price": 49.99
+  },
+  {
+    "name": "Gaming Mouse Pad XL",
+    "description": "Extra-large gaming mouse pad with RGB edges, smooth surface, and anti-slip base. Perfect for gaming and workspace setup.",
+    "price": 24.99
+  },
+  {
+    "name": "Wireless Mechanical Keyboard K8",
+    "description": "Premium wireless mechanical keyboard with hot-swappable switches and aluminum frame. Multi-device connectivity.",
+    "price": 159.99
+  },
+  {
+    "name": "4K Webcam Pro Max",
+    "description": "Professional 4K webcam with AI-powered tracking and background blur. Perfect for content creators and streamers.",
+    "price": 199.99
+  },
+  {
+    "name": "USB Condenser Microphone",
+    "description": "Studio-quality USB microphone with multiple pickup patterns and zero-latency monitoring. Ideal for podcasting and streaming.",
+    "price": 129.99
+  },
+  {
+    "name": "32-inch Curved Gaming Monitor",
+    "description": "Ultra-wide curved gaming monitor with 165Hz refresh rate and 1ms response time. AMD FreeSync Premium support.",
+    "price": 449.99
+  },
+  {
+    "name": "Vertical Ergonomic Mouse",
+    "description": "Vertical mouse design for natural hand position and reduced wrist strain. Features adjustable DPI and silent clicks.",
+    "price": 39.99
+  },
+  {
+    "name": "Thunderbolt 4 Dock Pro",
+    "description": "Professional docking station with multiple display outputs, USB ports, and 96W power delivery. Perfect for workstations.",
+    "price": 279.99
+  },
+  {
+    "name": "Gaming Mouse Pro X750",
+    "description": "High-precision gaming mouse with 16000 DPI optical sensor and customizable RGB lighting. Features 8 programmable buttons.",
+    "price": 89.99
+  },
+  {
+    "name": "Mechanical Gaming Keyboard RGB X1",
+    "description": "Full-size mechanical gaming keyboard with per-key RGB lighting and macro programming. Features USB pass-through port.",
+    "price": 169.99
+  },
+  {
+    "name": "Ultra-Wide Gaming Monitor 34",
+    "description": "34-inch ultrawide gaming monitor with 144Hz refresh rate and G-SYNC support. Features HDR400 certification.",
+    "price": 699.99
+  },
+  {
+    "name": "Premium Wireless Headset Pro",
+    "description": "High-fidelity wireless gaming headset with 50mm drivers and virtual surround sound. Features dual wireless connectivity.",
+    "price": 249.99
+  },
+  {
+    "name": "RGB Gaming Mouse Pad 3XL",
+    "description": "Extended RGB gaming mouse pad with 14 lighting zones and anti-fray stitched edges. Perfect for full desktop coverage.",
+    "price": 39.99
+  }
+,
+  {
+    "name": "Wireless Gaming Controller Elite",
+    "description": "Professional-grade wireless gaming controller with customizable buttons and trigger stops. Features premium build quality.",
+    "price": 179.99
+  },
+  {
+    "name": "4TB External Gaming Drive",
+    "description": "High-performance external HDD optimized for gaming. Features quick game installation and load times.",
+    "price": 129.99
+  },
+  {
+    "name": "Gaming Chair Pro X",
+    "description": "Ergonomic gaming chair with 4D adjustable armrests and lumbar support. Features premium PU leather.",
+    "price": 299.99
+  },
+  {
+    "name": "Stream Deck Mini",
+    "description": "Compact stream control panel with 6 customizable LCD keys. Perfect for content creators and streamers.",
+    "price": 79.99
+  },
+  {
+    "name": "RGB Light Strip Gaming",
+    "description": "Addressable RGB light strip with gaming sync support. Features music reactive modes.",
+    "price": 29.99
+  },
+  {
+    "name": "Gaming Router AX6000",
+    "description": "High-performance gaming router with WiFi 6 and gaming prioritization. Features 8 external antennas.",
+    "price": 349.99
+  },
+  {
+    "name": "Capture Card Pro 4K60",
+    "description": "Professional capture card supporting 4K60 HDR pass-through. Perfect for streaming and recording.",
+    "price": 249.99
+  },
+  {
+    "name": "Gaming Monitor Stand Pro",
+    "description": "Premium monitor stand with cable management and RGB lighting. Supports up to 32-inch monitors.",
+    "price": 79.99
+  },
+  {
+    "name": "Gaming Speaker System 2.1",
+    "description": "RGB gaming speakers with powerful subwoofer and crystal clear sound. Features Bluetooth connectivity.",
+    "price": 149.99
+  },
+  {
+    "name": "USB Gaming Hub RGB",
+    "description": "7-port USB hub with individual port control and RGB lighting. Features aluminum construction.",
+    "price": 49.99
+  }
+,
+  {
+    "name": "Professional Webcam Ring Light",
+    "description": "18-inch LED ring light with phone holder and remote control. Perfect for streaming and content creation.",
+    "price": 69.99
+  },
+  {
+    "name": "Streaming Microphone Arm Stand",
+    "description": "Professional microphone boom arm with cable management and 360-degree rotation. Features desk clamp mount.",
+    "price": 39.99
+  },
+  {
+    "name": "Dual Monitor Stand Premium",
+    "description": "Gas spring monitor mount supporting dual 32-inch monitors. Features tool-free adjustment and cable management.",
+    "price": 199.99
+  },
+  {
+    "name": "Wireless Gaming Earbuds Pro",
+    "description": "Low-latency wireless gaming earbuds with active noise cancellation. Features Bluetooth 5.2 and USB-C charging.",
+    "price": 129.99
+  },
+  {
+    "name": "Premium Camera Tripod",
+    "description": "Professional tripod with fluid head and quick release plate. Perfect for streaming and content creation.",
+    "price": 89.99
+  },
+  {
+    "name": "Stream Deck XL",
+    "description": "Advanced stream control panel with 32 customizable LCD keys. Features multi-action support.",
+    "price": 249.99
+  },
+  {
+    "name": "Gaming Desk RGB",
+    "description": "Full-size gaming desk with built-in RGB lighting and cable management. Features cup holder and headphone hook.",
+    "price": 299.99
+  },
+  {
+    "name": "Wireless Gaming Mouse Dock",
+    "description": "Magnetic charging dock with RGB lighting for wireless gaming mouse. Features quick charge capability.",
+    "price": 49.99
+  },
+  {
+    "name": "Gaming Headset Stand RGB",
+    "description": "Premium headset stand with RGB base and USB ports. Features aluminum construction.",
+    "price": 39.99
+  },
+  {
+    "name": "Cable Management Kit Pro",
+    "description": "Professional cable management kit with sleeves, clips, and ties. Perfect for clean setup management.",
+    "price": 29.99
+  }
+,
+  {
+    "name": "Streaming PC Pro X",
+    "description": "High-performance streaming PC with RTX 4080 and Ryzen 9. Features custom RGB lighting and liquid cooling.",
+    "price": 2499.99
+  },
+  {
+    "name": "Content Creator Bundle Elite",
+    "description": "Complete streaming setup including camera, microphone, and lighting. Perfect for professional content creation.",
+    "price": 799.99
+  },
+  {
+    "name": "Professional Camera Link",
+    "description": "High-quality camera link for DSLR streaming. Features 4K pass-through and low latency.",
+    "price": 299.99
+  },
+  {
+    "name": "Audio Mixer Pro Digital",
+    "description": "8-channel digital audio mixer with USB interface. Perfect for streaming and podcast production.",
+    "price": 399.99
+  },
+  {
+    "name": "Green Screen Kit Professional",
+    "description": "Collapsible green screen with stand and carrying case. Features wrinkle-resistant material.",
+    "price": 149.99
+  },
+  {
+    "name": "Studio Light Kit Premium",
+    "description": "3-point lighting kit with adjustable color temperature. Perfect for professional video production.",
+    "price": 249.99
+  },
+  {
+    "name": "Video Switcher Pro",
+    "description": "4-channel video switcher with HDMI inputs. Features live streaming capability and effects.",
+    "price": 599.99
+  },
+  {
+    "name": "Podcast Microphone Kit",
+    "description": "Complete podcast recording kit with interface and accessories. Features studio-quality audio capture.",
+    "price": 349.99
+  },
+  {
+    "name": "Stream Controller Mini",
+    "description": "Compact stream controller with programmable dials and buttons. Perfect for audio mixing.",
+    "price": 149.99
+  },
+  {
+    "name": "Teleprompter Kit Pro",
+    "description": "Professional teleprompter with mounting kit and software. Features adjustable speed control.",
+    "price": 299.99
+  }
+,
+  {
+    "name": "Gaming Router Pro X9000",
+    "description": "Tri-band gaming router with WiFi 6E support and 10Gb port. Features AI-powered traffic optimization.",
+    "price": 499.99
+  },
+  {
+    "name": "Network Switch 10G",
+    "description": "8-port 10Gb network switch with SFP+ ports. Features managed switching capabilities.",
+    "price": 399.99
+  },
+  {
+    "name": "Mesh WiFi Gaming System",
+    "description": "3-pack gaming mesh WiFi system with dedicated backhaul. Features parental controls and security features.",
+    "price": 599.99
+  },
+  {
+    "name": "Network Card 10G",
+    "description": "Dual-port 10Gb network card with SFP+ connectivity. Features hardware offloading support.",
+    "price": 199.99
+  },
+  {
+    "name": "Gaming WiFi Extender Pro",
+    "description": "Dual-band WiFi 6 range extender with 4x4 MU-MIMO. Features gaming mode and ethernet port.",
+    "price": 149.99
+  },
+  {
+    "name": "Network Storage Gaming",
+    "description": "4-bay NAS optimized for game storage and streaming. Features 10Gb connectivity.",
+    "price": 699.99
+  },
+  {
+    "name": "Gaming Network Cable Cat8",
+    "description": "High-performance Cat8 ethernet cable with premium shielding. Features gold-plated connectors.",
+    "price": 29.99
+  },
+  {
+    "name": "Network Security Gateway",
+    "description": "Advanced network security appliance with VPN support. Features intrusion prevention system.",
+    "price": 299.99
+  },
+  {
+    "name": "Powerline Gaming Adapter",
+    "description": "2Gbps powerline networking kit with pass-through outlet. Features encrypted connection.",
+    "price": 129.99
+  },
+  {
+    "name": "Network Monitoring Display",
+    "description": "7-inch LCD display for network monitoring and stats. Features customizable dashboard.",
+    "price": 89.99
+  }
+,
+  {
+    "name": "NVMe SSD Pro 2TB",
+    "description": "High-speed PCIe 4.0 NVMe SSD with 7000MB/s read speed. Features hardware encryption.",
+    "price": 299.99
+  },
+  {
+    "name": "External Gaming SSD 4TB",
+    "description": "Portable gaming SSD with RGB lighting and USB 3.2 Gen 2x2. Features shock-resistant design.",
+    "price": 499.99
+  },
+  {
+    "name": "M.2 Gaming SSD 1TB",
+    "description": "PCIe Gen4 M.2 SSD with heatsink and RGB lighting. Features 7300MB/s read speeds.",
+    "price": 179.99
+  },
+  {
+    "name": "Backup Drive Pro 8TB",
+    "description": "High-capacity backup drive with hardware encryption. Features automatic backup software.",
+    "price": 249.99
+  },
+  {
+    "name": "Gaming RAID Enclosure",
+    "description": "Dual-bay RAID enclosure with USB-C connectivity. Features hardware RAID controller.",
+    "price": 199.99
+  },
+  {
+    "name": "SSD Heatsink RGB",
+    "description": "M.2 SSD heatsink with RGB lighting and temperature monitor. Features copper heat pipes.",
+    "price": 39.99
+  },
+  {
+    "name": "Game Drive Hub 16TB",
+    "description": "Multi-drive storage hub with RGB lighting and USB ports. Features game library management.",
+    "price": 599.99
+  },
+  {
+    "name": "Portable Gaming SSD 2TB",
+    "description": "Compact gaming SSD with shock protection and LED indicator. Features USB 3.2 Gen 2.",
+    "price": 299.99
+  },
+  {
+    "name": "NAS Gaming Edition 8TB",
+    "description": "Network storage device optimized for game libraries. Features dual 2.5GbE ports.",
+    "price": 799.99
+  },
+  {
+    "name": "SSD Upgrade Kit Pro",
+    "description": "Complete SSD upgrade kit with cloning software and cables. Features installation tools.",
+    "price": 49.99
+  }
+,
+  {
+    "name": "Gaming Mouse Bungee RGB",
+    "description": "Premium mouse bungee with RGB lighting and USB hub. Features weighted base and flexible arm.",
+    "price": 29.99
+  },
+  {
+    "name": "Gaming Wrist Rest Pro",
+    "description": "Memory foam wrist rest with cooling gel and anti-slip base. Features premium fabric cover.",
+    "price": 24.99
+  },
+  {
+    "name": "Keyboard Keycap Set RGB",
+    "description": "PBT double-shot keycap set with RGB shine-through. Features premium build quality.",
+    "price": 59.99
+  },
+  {
+    "name": "Gaming Switch Tester Kit",
+    "description": "Mechanical switch tester with 12 different switches. Features acrylic case and keycaps.",
+    "price": 19.99
+  },
+  {
+    "name": "Gaming Cable Kit Custom",
+    "description": "Custom paracord cable kit for gaming peripherals. Features aluminum connectors.",
+    "price": 39.99
+  },
+  {
+    "name": "Controller Thumb Grips Pro",
+    "description": "Premium silicone thumb grips for gaming controllers. Features various heights and patterns.",
+    "price": 14.99
+  },
+  {
+    "name": "Gaming Desk Mat XL",
+    "description": "Extended desk mat with stitched edges and water-resistant surface. Features minimalist design.",
+    "price": 34.99
+  },
+  {
+    "name": "Keyboard O-Ring Kit",
+    "description": "Silicone O-ring kit for mechanical keyboards. Features different hardness options.",
+    "price": 9.99
+  },
+  {
+    "name": "Gaming Laptop Stand RGB",
+    "description": "Aluminum laptop stand with RGB lighting and USB hub. Features adjustable height.",
+    "price": 69.99
+  },
+  {
+    "name": "Controller Charging Dock",
+    "description": "Dual controller charging dock with LED indicators. Features fast charging support.",
+    "price": 29.99
+  }
+,
+  {
+    "name": "Gaming DAC/Amp Combo",
+    "description": "High-fidelity DAC and amplifier combo for gaming audio. Features RGB volume display.",
+    "price": 199.99
+  },
+  {
+    "name": "Studio Monitor Speakers",
+    "description": "Professional gaming monitor speakers with RGB lighting. Features Bluetooth connectivity.",
+    "price": 299.99
+  },
+  {
+    "name": "Gaming Soundbar RGB",
+    "description": "Gaming soundbar with RGB lighting and virtual surround sound. Features multiple audio modes.",
+    "price": 149.99
+  },
+  {
+    "name": "Wireless Gaming Earbuds",
+    "description": "Low-latency wireless gaming earbuds with RGB case. Features active noise cancellation.",
+    "price": 129.99
+  },
+  {
+    "name": "Gaming Audio Mixer USB",
+    "description": "USB audio mixer with RGB faders and sound effects. Features voice changer.",
+    "price": 89.99
+  },
+  {
+    "name": "Surround Sound System",
+    "description": "7.1 surround sound system optimized for gaming. Features wireless subwoofer.",
+    "price": 399.99
+  },
+  {
+    "name": "Gaming Headphone Stand",
+    "description": "Premium headphone stand with RGB lighting and USB hub. Features aluminum construction.",
+    "price": 49.99
+  },
+  {
+    "name": "Stream Microphone Pro",
+    "description": "Professional streaming microphone with RGB lighting. Features multiple polar patterns.",
+    "price": 159.99
+  },
+  {
+    "name": "Gaming Sound Card RGB",
+    "description": "PCIe sound card with RGB lighting and 7.1 surround. Features high-grade DAC.",
+    "price": 129.99
+  },
+  {
+    "name": "Bluetooth Audio Adapter",
+    "description": "Low-latency Bluetooth 5.2 adapter for gaming audio. Features aptX HD support.",
+    "price": 39.99
+  }
+,
+  {
+    "name": "Gaming Chair Elite RGB",
+    "description": "Premium gaming chair with RGB lighting and 4D armrests. Features neck and lumbar support.",
+    "price": 399.99
+  },
+  {
+    "name": "Gaming Desk Pro RGB",
+    "description": "Electric height-adjustable gaming desk with RGB edges. Features cable management system.",
+    "price": 599.99
+  },
+  {
+    "name": "Footrest Pro Gaming",
+    "description": "Ergonomic gaming footrest with massage rollers. Features adjustable height and angle.",
+    "price": 49.99
+  },
+  {
+    "name": "Monitor Mount Dual RGB",
+    "description": "Dual monitor mount with RGB lighting and USB hub. Features tool-free adjustment.",
+    "price": 149.99
+  },
+  {
+    "name": "Gaming Storage Cabinet",
+    "description": "Gaming equipment storage cabinet with RGB lighting. Features tempered glass doors.",
+    "price": 199.99
+  },
+  {
+    "name": "Cable Management Rack",
+    "description": "Under-desk cable management rack with power strip mount. Features easy installation.",
+    "price": 29.99
+  },
+  {
+    "name": "Gaming Chair Mat RGB",
+    "description": "RGB gaming chair mat with hard surface design. Features anti-slip backing.",
+    "price": 79.99
+  },
+  {
+    "name": "Monitor Shelf RGB",
+    "description": "Monitor riser shelf with RGB lighting and storage drawer. Features aluminum construction.",
+    "price": 89.99
+  },
+  {
+    "name": "Gaming Desk Pad RGB",
+    "description": "Full-size desk pad with RGB border lighting. Features wireless charging zone.",
+    "price": 59.99
+  },
+  {
+    "name": "Keyboard Wrist Rest RGB",
+    "description": "Memory foam keyboard wrist rest with RGB lighting. Features cooling gel layer.",
+    "price": 39.99
+  }
+]

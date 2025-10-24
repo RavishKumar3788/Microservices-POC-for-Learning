@@ -1,10 +1,12 @@
 
+using Microsoft.OpenApi.Models;
 using Products.Repositories;
 using Products.Services;
 using Products.Settings;
 using Serilog;
 using Serilog.Exceptions;
 using Serilog.Sinks.Elasticsearch;
+using System.Reflection;
 
 namespace Products
 {
@@ -35,7 +37,24 @@ namespace Products
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "Products API",
+                    Version = "v1",
+                    Description = "Products API with XML comments"
+                });
+
+                // Get XML file path dynamically
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+
+                if (File.Exists(xmlPath))
+                {
+                    options.IncludeXmlComments(xmlPath);
+                }
+            });
 
             var app = builder.Build();
 

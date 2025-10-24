@@ -19,9 +19,6 @@ namespace Products.Models
         [BsonElement("price")]
         public decimal Price { get; set; }
 
-        [BsonElement("quantity")]
-        public int Quantity { get; set; }
-
         [BsonElement("createdAt")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

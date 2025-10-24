@@ -6,5 +6,6 @@ namespace Products.Services
     {
         Task<List<Product>> GetAllProductsAsync();
         Task<Product> AddProductAsync(Product product);
+        Task<List<Product>> AddProductsFromFileAsync();
     }
 }

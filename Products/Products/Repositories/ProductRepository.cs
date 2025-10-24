@@ -46,5 +46,24 @@ namespace Products.Repositories
                 throw;
             }
         }
+
+        public Task<List<Product>> AddProductsFromFileAsync(List<Product> products)
+        {
+            try
+            {
+                _logger.LogInformation("Adding {Count} products to the database", products.Count);
+                return _products.InsertManyAsync(products)
+                    .ContinueWith(_ =>
+                    {
+                        _logger.LogInformation("Successfully added {Count} products", products.Count);
+                        return products;
+                    });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while adding products from file");
+                throw;
+            }
+        }
     }
 }
