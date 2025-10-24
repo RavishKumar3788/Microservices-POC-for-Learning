@@ -8,6 +8,7 @@ import { ThemeProvider as MuiThemeProvider } from "@emotion/react";
 import { CssBaseline } from "@mui/material";
 import { darkTheme, lightTheme } from "./components/theme";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
+import Users from "./pages/Users";
 
 export function App() {
   return (
@@ -28,6 +29,7 @@ function AppContent() {
           <Navbar />
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/users" element={<Users />} />
             <Route path="/products" element={<Products />} />
             <Route path="/orders" element={<Orders />} />
           </Routes>

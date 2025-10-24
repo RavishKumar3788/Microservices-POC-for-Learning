@@ -6,6 +6,7 @@ import ShoppingBasketIcon from "@mui/icons-material/ShoppingBasket";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
+import UserIcon from "@mui/icons-material/Person";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -35,6 +36,14 @@ const Navbar = () => {
             className={getButtonClass("/")}
           >
             Home
+          </Button>
+          <Button
+            color="inherit"
+            startIcon={<UserIcon />}
+            onClick={() => navigate("/users")}
+            className={getButtonClass("/users")}
+          >
+            Users
           </Button>
           <Button
             color="inherit"
