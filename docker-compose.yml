@@ -50,7 +50,7 @@ services:
     restart: unless-stopped
 
   elasticsearch:
-    image: elasticsearch:7.10.1
+    image: elasticsearch:8.8.1
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
@@ -66,7 +66,7 @@ services:
     restart: unless-stopped
 
   logstash:
-    image: logstash:7.10.1
+    image: logstash:8.8.1
     container_name: logstash
     ports:
       - "5044:5044"
@@ -81,7 +81,7 @@ services:
     restart: unless-stopped
 
   kibana:
-    image: kibana:7.10.1
+    image: kibana:8.8.1
     container_name: kibana
     ports:
       - "5601:5601"
