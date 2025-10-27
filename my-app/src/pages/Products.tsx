@@ -7,9 +7,7 @@ const Products = () => {
       <Typography variant="h4" component="h1" gutterBottom>
         Products
       </Typography>
-      <Typography variant="body1">
-        <ProductList />
-      </Typography>
+      <ProductList />
     </Container>
   );
 };

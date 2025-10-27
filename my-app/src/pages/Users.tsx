@@ -7,9 +7,7 @@ const Users = () => {
       <Typography variant="h4" component="h1" gutterBottom>
         Users
       </Typography>
-      <Typography variant="body1">
-        <UserList />
-      </Typography>
+      <UserList />
     </Container>
   );
 };

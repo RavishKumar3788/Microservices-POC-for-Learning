@@ -8,12 +8,22 @@ import {
   TableRow,
   Paper,
   Button,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
 import { Product, productService } from "../../services/productService";
 import AddIcon from "@mui/icons-material/Add";
 import GridShimmer from "./GridShimmer";
+import ShoppingCartTwoToneIcon from "@mui/icons-material/ShoppingCartTwoTone";
 
-const ProductList = () => {
+type ProductListProps = {
+  userId?: string | null;
+  asModel?: boolean;
+};
+
+const ProductList = ({ userId, asModel }: ProductListProps) => {
+  console.log(userId);
+  console.log(asModel);
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
 
@@ -73,6 +83,7 @@ const ProductList = () => {
             <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
             <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
             <TableCell sx={{ fontWeight: "bold" }}>Price</TableCell>
+            <TableCell></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -81,6 +92,13 @@ const ProductList = () => {
               <TableCell>{product.name}</TableCell>
               <TableCell>{product.description}</TableCell>
               <TableCell>${product.price}</TableCell>
+              <TableCell>
+                <Tooltip title="Place Order">
+                  <IconButton>
+                    <ShoppingCartTwoToneIcon color="primary" />
+                  </IconButton>
+                </Tooltip>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
