@@ -25,3 +25,6 @@ my-app/node_modules/
 Products/.vs/
 Products/Products/bin/
 Products/Products/obj/
+Users/.vs/
+Users/Users/bin/
+Users/Users/obj/
