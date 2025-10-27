@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { User, userService } from "../../services/UserService";
 import {
   Table,
   TableBody,
@@ -9,39 +10,38 @@ import {
   Paper,
   Button,
 } from "@mui/material";
-import { Product, productService } from "../../services/productService";
 import AddIcon from "@mui/icons-material/Add";
 import GridShimmer from "./GridShimmer";
 
-const ProductList = () => {
+const UserList = () => {
   const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
 
-  const fetchProducts = async () => {
+  const fetchUsers = async () => {
     try {
       setLoading(true);
-      const data = await productService.getProducts();
-      setProducts(data);
+      const data = await userService.getUsers();
+      setUsers(data);
     } catch (error) {
       // Optionally handle error state here
-      console.error("Error fetching products:", error);
+      console.error("Error fetching users:", error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProducts();
+    fetchUsers();
   }, []);
 
-  const handleAddProduct = async () => {
+  const handleAddUser = async () => {
     try {
       setLoading(true);
-      const newProduct = await productService.addProducts();
-      setProducts((prevProducts) => [...prevProducts, ...newProduct]);
+      const newUser = await userService.addUsers();
+      setUsers((prevUsers) => [...prevUsers, ...newUser]);
     } catch (error) {
       // Optionally handle error state here
-      console.error("Error adding product:", error);
+      console.error("Error adding user:", error);
     } finally {
       setLoading(false);
     }
@@ -49,17 +49,17 @@ const ProductList = () => {
 
   if (loading) return <GridShimmer />;
 
-  if (products.length === 0) {
+  if (users.length === 0) {
     return (
       <>
-        <p>No products available.</p>
+        <p>No users available.</p>
         <Button
           variant="contained"
           color="primary"
           startIcon={<AddIcon />}
-          onClick={handleAddProduct}
+          onClick={handleAddUser}
         >
-          Add Products
+          Add Users
         </Button>
       </>
     );
@@ -76,11 +76,11 @@ const ProductList = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {products.map((product) => (
-            <TableRow key={product.id} hover>
-              <TableCell>{product.name}</TableCell>
-              <TableCell>{product.description}</TableCell>
-              <TableCell>${product.price}</TableCell>
+          {users.map((user) => (
+            <TableRow key={user.id} hover>
+              <TableCell>{user.name}</TableCell>
+              <TableCell>{user.email}</TableCell>
+              <TableCell>{user.country}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -89,4 +89,4 @@ const ProductList = () => {
   );
 };
 
-export default ProductList;
+export default UserList;

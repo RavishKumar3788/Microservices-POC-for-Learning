@@ -1,4 +1,5 @@
 import { Container, Typography } from "@mui/material";
+import UserList from "../components/subpages/UserList";
 
 const Users = () => {
   return (
@@ -7,7 +8,7 @@ const Users = () => {
         Users
       </Typography>
       <Typography variant="body1">
-        View and manage your users here...
+        <UserList />
       </Typography>
     </Container>
   );
