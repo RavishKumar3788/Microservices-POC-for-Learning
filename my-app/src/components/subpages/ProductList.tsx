@@ -83,7 +83,7 @@ const ProductList = ({ userId, asModel }: ProductListProps) => {
             <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
             <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
             <TableCell sx={{ fontWeight: "bold" }}>Price</TableCell>
-            <TableCell></TableCell>
+            {asModel && <TableCell></TableCell>}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -92,13 +92,15 @@ const ProductList = ({ userId, asModel }: ProductListProps) => {
               <TableCell>{product.name}</TableCell>
               <TableCell>{product.description}</TableCell>
               <TableCell>${product.price}</TableCell>
-              <TableCell>
-                <Tooltip title="Place Order">
-                  <IconButton>
-                    <ShoppingCartTwoToneIcon color="primary" />
-                  </IconButton>
-                </Tooltip>
-              </TableCell>
+              {asModel && (
+                <TableCell>
+                  <Tooltip title="Place Order">
+                    <IconButton>
+                      <ShoppingCartTwoToneIcon color="primary" />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>

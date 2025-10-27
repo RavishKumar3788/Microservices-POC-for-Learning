@@ -134,5 +134,16 @@ namespace Users.Controllers
             }
             return Ok(user);
         }
+
+        /// <summary>
+        /// Endpoint to create a test error for error handling verification.
+        /// </summary>
+        /// <returns>Throws an exception.</returns>
+        [HttpGet("CreateError")]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CreateError([FromQuery] List<string> ids)
+        {
+            throw new Exception("This is a test exception for error handling.");
+        }
     }
 }
