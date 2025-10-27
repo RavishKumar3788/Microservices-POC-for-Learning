@@ -65,5 +65,19 @@ namespace Products.Repositories
                 throw;
             }
         }
+
+        public Task<Product> GetProductByIdAsync(string id)
+        {
+            try
+            {
+                _logger.LogInformation("Retrieving product with ID: {ProductId}", id);
+                return _products.Find(product => product.Id == id).FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving product with ID: {ProductId}", id);
+                throw;
+            }
+        }
     }
 }

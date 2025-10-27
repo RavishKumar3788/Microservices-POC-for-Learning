@@ -74,5 +74,11 @@ namespace Products.Services
             _logger.LogInformation($"Completed adding all {processedCount} products");
             return allAddedProducts;
         }
+
+        public Task<Product> GetProductByIdAsync(string id)
+        {
+            _logger.LogInformation("Getting product by ID: {ProductId}", id);
+            return _productRepository.GetProductByIdAsync(id);
+        }
     }
 }

@@ -56,7 +56,7 @@ namespace Products
                 }
             });
 
-            // 1️⃣ Define allowed origins
+            // Define allowed origins
             string[] allowedOrigins = new[]
             {
                 "http://localhost:3000",               // React dev server
@@ -101,7 +101,7 @@ namespace Products
                 .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticConfig.Uri))
                 {
                     AutoRegisterTemplate = true,
-                    IndexFormat = string.Format(elasticConfig.IndexFormat, DateTime.UtcNow),
+                    IndexFormat = elasticConfig.IndexFormat,
                     NumberOfShards = elasticConfig.NumberOfShards,
                     NumberOfReplicas = elasticConfig.NumberOfReplicas
                 })

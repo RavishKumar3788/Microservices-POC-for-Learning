@@ -113,5 +113,28 @@ namespace Products.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+
+        /// <summary>
+        /// Health check endpoint.
+        /// </summary>
+        /// <returns>Health status of the API.</returns>
+        [HttpGet("health")]
+        public IActionResult HealthCheck()
+        {
+            return Ok("Product API is running");
+        }
+
+        [HttpGet("getProductById/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetProductById(string id)
+        {
+            var product = await _productService.GetProductByIdAsync(id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+            return Ok(product);
+        }
     }
 }

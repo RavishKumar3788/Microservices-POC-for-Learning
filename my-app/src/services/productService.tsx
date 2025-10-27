@@ -15,6 +15,14 @@ const getProducts = async (): Promise<Product[]> => {
   return response;
 };
 
+const addProducts = async (): Promise<Product[]> => {
+  const response = await httpService.get<Product[]>(
+    `${BASE_URL}/products/addProducts`
+  );
+  return response;
+};
+
 export const productService = {
   getProducts,
+  addProducts,
 };
