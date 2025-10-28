@@ -1,14 +1,14 @@
 
-using Microsoft.Extensions.Caching.Distributed;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Products
 {
     public static class DistributedCacheExtensions
     {
-        private static readonly JsonSerializerOptions serializerOptions = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions serializerOptions = new()
         {
             PropertyNamingPolicy = null,
             WriteIndented = true,
@@ -39,16 +39,15 @@ namespace Products
 
         public static async Task<T?> GetOrSetAsync<T>(this IDistributedCache cache, string key, Func<Task<T>> task, DistributedCacheEntryOptions? options = null)
         {
-            if (options == null)
-            {
-                options = new DistributedCacheEntryOptions()
+            options ??= new DistributedCacheEntryOptions()
                 .SetSlidingExpiration(TimeSpan.FromMinutes(30))
                 .SetAbsoluteExpiration(TimeSpan.FromHours(1));
-            }
+
             if (cache.TryGetValue(key, out T? value) && value is not null)
             {
                 return value;
             }
+
             value = await task();
             if (value is not null)
             {

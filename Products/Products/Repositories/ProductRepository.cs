@@ -1,4 +1,3 @@
-using Amazon.Runtime.Internal.Util;
 using MongoDB.Driver;
 using Products.Models;
 using Products.Settings;
@@ -40,7 +39,7 @@ namespace Products.Repositories
                 await _products.InsertOneAsync(product);
                 _logger.LogInformation("Successfully added product with ID: {ProductId}", product.Id);
 
-                
+
 
                 return product;
             }

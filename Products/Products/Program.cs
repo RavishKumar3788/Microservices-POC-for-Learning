@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.OpenApi.Models;
 using Products.Repositories;
 using Products.Services;
@@ -5,7 +6,6 @@ using Products.Settings;
 using Serilog;
 using Serilog.Exceptions;
 using Serilog.Sinks.Elasticsearch;
-using System.Reflection;
 
 namespace Products
 {
@@ -74,15 +74,21 @@ namespace Products
                 });
             });
 
-            builder.Services.AddStackExchangeRedisCache(options =>
+            // Bind Redis configuration from appsettings
+            var redisConfig = builder.Configuration.GetSection("Redis").Get<RedisConfiguration>();
+            if (redisConfig != null)
             {
-                options.Configuration = "localhost";
-                options.ConfigurationOptions = new StackExchange.Redis.ConfigurationOptions()
+                builder.Services.AddSingleton(redisConfig);
+                builder.Services.AddStackExchangeRedisCache(options =>
                 {
-                    AbortOnConnectFail = true,
-                    EndPoints = { options.Configuration }
-                };
-            });
+                    options.Configuration = redisConfig.Configuration;
+                    options.ConfigurationOptions = new StackExchange.Redis.ConfigurationOptions()
+                    {
+                        AbortOnConnectFail = redisConfig.AbortOnConnectFail,
+                        EndPoints = { redisConfig.Configuration }
+                    };
+                });
+            }
 
             var app = builder.Build();
 
