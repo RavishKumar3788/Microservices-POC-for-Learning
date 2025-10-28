@@ -1,4 +1,3 @@
-
 using Microsoft.OpenApi.Models;
 using Products.Repositories;
 using Products.Services;
@@ -73,6 +72,16 @@ namespace Products
                           .AllowAnyMethod()
                           .AllowCredentials(); // optional, if using cookies or auth headers
                 });
+            });
+
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = "localhost";
+                options.ConfigurationOptions = new StackExchange.Redis.ConfigurationOptions()
+                {
+                    AbortOnConnectFail = true,
+                    EndPoints = { options.Configuration }
+                };
             });
 
             var app = builder.Build();

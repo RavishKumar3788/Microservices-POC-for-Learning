@@ -1,3 +1,4 @@
+using Amazon.Runtime.Internal.Util;
 using MongoDB.Driver;
 using Products.Models;
 using Products.Settings;
@@ -38,6 +39,9 @@ namespace Products.Repositories
                 _logger.LogInformation("Adding new product: {ProductName}", product.Name);
                 await _products.InsertOneAsync(product);
                 _logger.LogInformation("Successfully added product with ID: {ProductId}", product.Id);
+
+                
+
                 return product;
             }
             catch (Exception ex)
