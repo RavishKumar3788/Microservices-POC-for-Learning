@@ -1,11 +1,25 @@
 services:
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    ports:
+      - "8080:80" # Main entry point - access everything through port 8080
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - react-app
+      - products-app
+      - user-app
+    networks:
+      - common-net
+    restart: unless-stopped
+
   react-app:
     build:
       context: /my-app
       dockerfile: Dockerfile
     container_name: react-app
-    ports:
-      - "3001:80" # Map host port 3001 → container port 80 (served by Nginx)
+    # No ports exposed externally - accessed through nginx-proxy
     restart: unless-stopped
     environment:
       - NODE_ENV=production
@@ -16,8 +30,7 @@ services:
       context: /products
       dockerfile: Dockerfile
     container_name: products-app
-    ports:
-      - "5001:8080" # Map host port 5001 → container port 8080
+    # No ports exposed externally - accessed through nginx-proxy
     restart: unless-stopped
     environment:
       - NODE_ENV=production
@@ -29,8 +42,7 @@ services:
       context: /users
       dockerfile: Dockerfile
     container_name: user-app
-    ports:
-      - "5002:8080" # Map host port 5002 → container port 8080
+    # No ports exposed externally - accessed through nginx-proxy
     restart: unless-stopped
     environment:
       - NODE_ENV=production

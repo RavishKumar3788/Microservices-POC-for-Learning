@@ -1,6 +1,6 @@
 import { httpService } from "../httpService/httpService";
 
-const BASE_URL = process.env.REACT_APP_PRODUCT_API_BASE_URL || "";
+const BASE_URL = '/api/products';
 
 export interface Product {
   id: string;
@@ -11,13 +11,13 @@ export interface Product {
 
 // Create a function to get products array from the httpService get method
 const getProducts = async (): Promise<Product[]> => {
-  const response = await httpService.get<Product[]>(`${BASE_URL}/products`);
+  const response = await httpService.get<Product[]>(`${BASE_URL}`);
   return response;
 };
 
 const addProducts = async (): Promise<Product[]> => {
   const response = await httpService.get<Product[]>(
-    `${BASE_URL}/products/addProducts`
+    `${BASE_URL}/addProducts`
   );
   return response;
 };
