@@ -1,6 +1,7 @@
 using Orders.Repositories;
 using Orders.Services;
 using Orders.Settings;
+using Scalar.AspNetCore;
 
 namespace Orders
 {
@@ -52,6 +53,7 @@ namespace Orders
 
             // Configure the HTTP request pipeline.
             app.MapOpenApi();
+            app.MapScalarApiReference();
 
             // Use the CORS policy
             app.UseCors("AllowedOriginsPolicy");
