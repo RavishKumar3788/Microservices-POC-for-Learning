@@ -75,6 +75,21 @@ namespace Users
                 });
             });
 
+            // Bind Redis configuration from appsettings
+            var redisConfig = builder.Configuration.GetSection("Redis").Get<RedisConfiguration>();
+            if (redisConfig != null)
+            {
+                builder.Services.AddSingleton(redisConfig);
+                builder.Services.AddStackExchangeRedisCache(options =>
+                {
+                    options.Configuration = redisConfig.Configuration;
+                    options.ConfigurationOptions = new StackExchange.Redis.ConfigurationOptions()
+                    {
+                        AbortOnConnectFail = redisConfig.AbortOnConnectFail,
+                        EndPoints = { redisConfig.Configuration }
+                    };
+                });
+            }
 
             var app = builder.Build();
 

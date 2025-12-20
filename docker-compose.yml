@@ -16,7 +16,7 @@ services:
 
   react-app:
     build:
-      context: /my-app
+      context: ./my-app
       dockerfile: Dockerfile
     container_name: react-app
     # No ports exposed externally - accessed through nginx-proxy
@@ -27,25 +27,33 @@ services:
       - common-net
   products-app:
     build:
-      context: /products
+      context: ./Products
       dockerfile: Dockerfile
     container_name: products-app
     # No ports exposed externally - accessed through nginx-proxy
     restart: unless-stopped
     environment:
       - NODE_ENV=production
+    depends_on:
+      - mongodb
+      - redis
+      - elasticsearch
     networks:
       - common-net
 
   user-app:
     build:
-      context: /users
+      context: ./Users
       dockerfile: Dockerfile
     container_name: user-app
     # No ports exposed externally - accessed through nginx-proxy
     restart: unless-stopped
     environment:
       - NODE_ENV=production
+    depends_on:
+      - mongodb
+      - redis
+      - elasticsearch
     networks:
       - common-net
 
@@ -105,10 +113,12 @@ services:
     container_name: logstash
     ports:
       - "5044:5044"
+      - "5000:5000"
     environment:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
     volumes:
       - logstash_data:/usr/share/logstash/data
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
     depends_on:
       - elasticsearch
     networks:

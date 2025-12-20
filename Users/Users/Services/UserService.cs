@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Microsoft.Extensions.Caching.Distributed;
 using Users.Models;
 using Users.Repositories;
 using Users.ViewModels;
@@ -7,25 +8,64 @@ namespace Users.Services
 {
     public class UserService : IUserService
     {
+        private const string cacheKey = "users";
         private readonly IUsersRepository _UserRepository;
         private readonly ILogger<UserService> _logger;
+        private readonly IDistributedCache _cache;
 
-        public UserService(IUsersRepository UserRepository, ILogger<UserService> logger)
+        public UserService(IUsersRepository UserRepository, ILogger<UserService> logger, IDistributedCache cache)
         {
             _UserRepository = UserRepository;
             _logger = logger;
+            _cache = cache;
         }
 
         public async Task<List<User>> GetAllUsersAsync()
         {
             _logger.LogInformation("Getting all Users");
-            return await _UserRepository.GetAllAsync();
+            try
+            {
+                var userList = await _cache.GetOrSetAsync<List<User>>(cacheKey, async () =>
+                {
+                    _logger.LogInformation($"Cache miss for key: {cacheKey}. Retrieving from database.");
+                    return await _UserRepository.GetAllAsync();
+                });
+                return userList ?? new List<User>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting all users.");
+                throw;
+            }
         }
 
         public async Task<User> AddUserAsync(User User)
         {
             _logger.LogInformation("Adding new User");
-            return await _UserRepository.AddAsync(User);
+            try
+            {
+                var insertedUser = await _UserRepository.AddAsync(User);
+                InvalidateUsersCache();
+                return insertedUser;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while adding a new user.");
+                throw;
+            }
+        }
+
+        private void InvalidateUsersCache()
+        {
+            try
+            {
+                _logger.LogInformation($"Invalidating cache for key: {cacheKey}.");
+                _cache.Remove(cacheKey);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error occurred while invalidating cache for key: {cacheKey}.");
+            }
         }
 
         public async Task<List<User>> AddUsersFromFileAsync()
@@ -72,13 +112,32 @@ namespace Users.Services
             }
 
             _logger.LogInformation($"Completed adding all {processedCount} Users");
+            InvalidateUsersCache();
             return allAddedUsers;
         }
 
         public async Task<User> GetUserByIdAsync(string id)
         {
             _logger.LogInformation($"Getting User with User Id {id}");
-            return await _UserRepository.GetUserByIdAsync(id);
+            try
+            {
+                var user = await _cache.GetOrSetAsync<User>($"{cacheKey}_{id}", () =>
+                {
+                    _logger.LogInformation("Cache miss for user ID: {UserId}. Retrieving from database.", id);
+                    return _UserRepository.GetUserByIdAsync(id);
+                });
+                if (user == null)
+                {
+                    _logger.LogWarning("User with ID {UserId} not found.", id);
+                    throw new KeyNotFoundException($"User with ID {id} not found.");
+                }
+                return user;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting user by ID: {UserId}", id);
+                throw;
+            }
         }
     }
 }

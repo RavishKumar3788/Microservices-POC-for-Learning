@@ -28,3 +28,7 @@ Products/Products/obj/
 Users/.vs/
 Users/Users/bin/
 Users/Users/obj/
+Orders/.vs/
+Orders/Orders/Orders.csproj.user
+Orders/Orders/bin/
+Orders/Orders/obj/
