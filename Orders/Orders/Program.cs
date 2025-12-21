@@ -42,6 +42,7 @@ namespace Orders
             {
                 "http://localhost:3000",               // React dev server
                 "http://localhost:3001",               // Production React app
+                "http://localhost:8080"                // Nginx proxy (for Scalar)
             };
 
             // Register CORS service with named policy

@@ -57,6 +57,22 @@ services:
     networks:
       - common-net
 
+  orders-app:
+    build:
+      context: ./Orders
+      dockerfile: Dockerfile
+    container_name: orders-app
+    # No ports exposed externally - accessed through nginx-proxy
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - mongodb
+      - redis
+      - elasticsearch
+    networks:
+      - common-net
+
   mongodb:
     image: mongo:latest
     container_name: mongo-db
