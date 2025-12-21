@@ -1,6 +1,8 @@
 import { httpService } from "../httpService/httpService";
 
-const BASE_URL = '/api/users';
+const BASE_URL = process.env.NODE_ENV === 'development'
+  ? 'http://localhost:8080/api/users'
+  : '/api/users';
 
 export interface User {
   id: string;

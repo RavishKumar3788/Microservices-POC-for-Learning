@@ -1,7 +1,8 @@
+using System.Reflection;
+using Microsoft.OpenApi.Models;
 using Orders.Repositories;
 using Orders.Services;
 using Orders.Settings;
-using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Exceptions;
 using Serilog.Sinks.Elasticsearch;
@@ -34,15 +35,31 @@ namespace Orders
             builder.Services.AddScoped<IOrderService, OrderService>();
 
             builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "Orders API",
+                    Version = "v1",
+                    Description = "Orders API with XML comments"
+                });
+
+                // Get XML file path dynamically
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+
+                if (File.Exists(xmlPath))
+                {
+                    options.IncludeXmlComments(xmlPath);
+                }
+            });
 
             // Define allowed origins
             string[] allowedOrigins = new[]
             {
                 "http://localhost:3000",               // React dev server
                 "http://localhost:3001",               // Production React app
-                "http://localhost:8080"                // Nginx proxy (for Scalar)
             };
 
             // Register CORS service with named policy
@@ -60,8 +77,9 @@ namespace Orders
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            app.MapOpenApi();
-            app.MapScalarApiReference();
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             // Use the CORS policy
             app.UseCors("AllowedOriginsPolicy");

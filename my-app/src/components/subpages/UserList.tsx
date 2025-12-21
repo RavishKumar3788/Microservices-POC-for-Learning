@@ -9,30 +9,13 @@ import {
   TableRow,
   Paper,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Slide,
   Tooltip,
   IconButton,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowCircleRightTwoToneIcon from "@mui/icons-material/ArrowCircleRightTwoTone";
-import CloseIcon from "@mui/icons-material/Close";
-import { TransitionProps } from "@mui/material/transitions";
 import GridShimmer from "./GridShimmer";
-import ProductList from "./ProductList";
-
-const Transition = React.forwardRef(function Transition(
-  props: TransitionProps & {
-    children: React.ReactElement<any, any>;
-  },
-  ref: React.Ref<unknown>
-) {
-  return <Slide direction="down" ref={ref} {...props} />;
-});
+import ProductSelectionDialog from "./ProductSelectionDialog";
 
 const UserList = () => {
   const [loading, setLoading] = useState(true);
@@ -41,7 +24,6 @@ const UserList = () => {
   const [selectedUserId, setSelectedUserId] = React.useState<string | null>(
     null
   );
-  const descriptionElementRef = React.useRef<HTMLElement>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -81,15 +63,6 @@ const UserList = () => {
   const handleClose = () => {
     setOpen(false);
   };
-
-  useEffect(() => {
-    if (open) {
-      const { current: descriptionElement } = descriptionElementRef;
-      if (descriptionElement !== null) {
-        descriptionElement.focus();
-      }
-    }
-  }, [open]);
 
   if (loading) return <GridShimmer />;
 
@@ -143,48 +116,11 @@ const UserList = () => {
         </Table>
       </TableContainer>
 
-      <Dialog
+      <ProductSelectionDialog
         open={open}
         onClose={handleClose}
-        scroll="paper"
-        aria-labelledby="scroll-dialog-title"
-        aria-describedby="scroll-dialog-description"
-        slots={{
-          transition: Transition,
-        }}
-        fullWidth={true}
-        maxWidth="lg"
-      >
-        <DialogTitle id="scroll-dialog-title">
-          Select a product to place the order
-        </DialogTitle>
-        <IconButton
-          aria-label="close"
-          onClick={handleClose}
-          sx={(theme) => ({
-            position: "absolute",
-            right: 8,
-            top: 8,
-            color: theme.palette.grey[500],
-          })}
-        >
-          <CloseIcon />
-        </IconButton>
-        <DialogContent dividers={true}>
-          <DialogContentText
-            id="scroll-dialog-description"
-            ref={descriptionElementRef}
-            tabIndex={-1}
-          >
-            {<ProductList userId={selectedUserId} asModel={true} />}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} variant="outlined">
-            Cancel
-          </Button>
-        </DialogActions>
-      </Dialog>
+        userId={selectedUserId}
+      />
     </>
   );
 };
