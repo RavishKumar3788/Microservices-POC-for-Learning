@@ -4,6 +4,8 @@ import {
   useState,
   ReactNode,
   useEffect,
+  useCallback,
+  useMemo,
 } from "react";
 
 interface ThemeContextType {
@@ -16,9 +18,9 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [darkMode, setDarkMode] = useState(false);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
+  const toggleDarkMode = useCallback(() => {
+    setDarkMode((prev) => !prev);
+  }, []);
 
   // Toggle Tailwind dark mode class
   useEffect(() => {
@@ -29,8 +31,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [darkMode]);
 
+  const value = useMemo(
+    () => ({ darkMode, toggleDarkMode }),
+    [darkMode, toggleDarkMode]
+  );
+
   return (
-    <ThemeContext.Provider value={{ darkMode, toggleDarkMode }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );

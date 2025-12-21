@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
     Dialog,
     DialogTitle,
@@ -41,7 +41,7 @@ const PlaceOrderDialog: React.FC<PlaceOrderDialogProps> = ({
     const [quantity, setQuantity] = useState<number>(1);
     const [notes, setNotes] = useState<string>("");
 
-    const handlePlaceOrder = () => {
+    const handlePlaceOrder = useCallback(() => {
         if (!product || !userId) return;
 
         // TODO: Implement order placement logic here
@@ -57,13 +57,13 @@ const PlaceOrderDialog: React.FC<PlaceOrderDialogProps> = ({
         setQuantity(1);
         setNotes("");
         onClose();
-    };
+    }, [product, userId, quantity, notes, onClose]);
 
-    const handleClose = () => {
+    const handleClose = useCallback(() => {
         setQuantity(1);
         setNotes("");
         onClose();
-    };
+    }, [onClose]);
 
     if (!product) return null;
 

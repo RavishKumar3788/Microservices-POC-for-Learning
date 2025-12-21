@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { User, userService } from "../../services/UserService";
 import {
   Table,
@@ -25,11 +25,7 @@ const UserList = () => {
     null
   );
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const data = await userService.getUsers();
@@ -40,9 +36,13 @@ const UserList = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleAddUser = async () => {
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  const handleAddUser = useCallback(async () => {
     try {
       setLoading(true);
       const newUser = await userService.addUsers();
@@ -53,16 +53,16 @@ const UserList = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleClickOpen = (userId: string) => {
+  const handleClickOpen = useCallback((userId: string) => {
     setSelectedUserId(userId);
     setOpen(true);
-  };
+  }, []);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setOpen(false);
-  };
+  }, []);
 
   if (loading) return <GridShimmer />;
 

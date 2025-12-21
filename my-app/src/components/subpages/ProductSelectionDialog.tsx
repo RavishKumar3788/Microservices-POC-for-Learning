@@ -28,7 +28,7 @@ interface ProductSelectionDialogProps {
     userId: string | null;
 }
 
-const ProductSelectionDialog: React.FC<ProductSelectionDialogProps> = ({
+const ProductSelectionDialog: React.FC<ProductSelectionDialogProps> = React.memo(({
     open,
     onClose,
     userId,
@@ -88,6 +88,6 @@ const ProductSelectionDialog: React.FC<ProductSelectionDialogProps> = ({
             </DialogActions>
         </Dialog>
     );
-};
+});
 
 export default ProductSelectionDialog;

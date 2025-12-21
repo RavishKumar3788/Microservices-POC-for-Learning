@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -30,7 +30,7 @@ const ProductList = ({ userId, asModel }: ProductListProps) => {
   const [orderDialogOpen, setOrderDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
       const data = await productService.getProducts();
@@ -41,13 +41,13 @@ const ProductList = ({ userId, asModel }: ProductListProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
 
-  const handleAddProduct = async () => {
+  const handleAddProduct = useCallback(async () => {
     try {
       setLoading(true);
       const newProduct = await productService.addProducts();
@@ -58,7 +58,17 @@ const ProductList = ({ userId, asModel }: ProductListProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  const placeOrder = useCallback((product: Product): void => {
+    setSelectedProduct(product);
+    setOrderDialogOpen(true);
+  }, []);
+
+  const handleCloseOrderDialog = useCallback(() => {
+    setOrderDialogOpen(false);
+    setSelectedProduct(null);
+  }, []);
 
   if (loading) return <GridShimmer />;
 
@@ -77,15 +87,6 @@ const ProductList = ({ userId, asModel }: ProductListProps) => {
       </>
     );
   }
-  const placeOrder = (product: Product): void => {
-    setSelectedProduct(product);
-    setOrderDialogOpen(true);
-  };
-
-  const handleCloseOrderDialog = () => {
-    setOrderDialogOpen(false);
-    setSelectedProduct(null);
-  };
 
   return (
     <>

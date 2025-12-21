@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { AppBar, Toolbar, Typography, Button } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
@@ -13,14 +14,13 @@ const Navbar = () => {
   const location = useLocation();
   const { darkMode, toggleDarkMode } = useTheme();
 
-  const getButtonClass = (path: string) => {
+  const getButtonClass = useCallback((path: string) => {
     const isActive = location.pathname === path;
-    return `hover:bg-blue-700 relative ${
-      isActive
-        ? "after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-white"
-        : ""
-    }`;
-  };
+    return `hover:bg-blue-700 relative ${isActive
+      ? "after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-white"
+      : ""
+      }`;
+  }, [location.pathname]);
 
   return (
     <AppBar position="static" className="bg-blue-600">
