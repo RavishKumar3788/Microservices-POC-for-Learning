@@ -2,6 +2,9 @@ using Orders.Repositories;
 using Orders.Services;
 using Orders.Settings;
 using Scalar.AspNetCore;
+using Serilog;
+using Serilog.Exceptions;
+using Serilog.Sinks.Elasticsearch;
 
 namespace Orders
 {
@@ -13,11 +16,15 @@ namespace Orders
 
             // Configure settings from appsettings.json
             var mongoDbSettings = builder.Configuration.GetSection("MongoDb").Get<MongoDbSettings>();
+            var elasticSettings = builder.Configuration.GetSection("ElasticConfiguration").Get<ElasticConfiguration>();
 
-            if (mongoDbSettings == null)
+            if (mongoDbSettings == null || elasticSettings == null)
             {
-                throw new InvalidOperationException("Configuration section 'MongoDb' is missing or invalid.");
+                throw new InvalidOperationException("Configuration sections 'MongoDb' or 'ElasticConfiguration' are missing or invalid.");
             }
+
+            // Configure Serilog with Elasticsearch
+            ConfigureLogging(builder, elasticSettings);
 
             // Add MongoDB settings
             builder.Services.AddSingleton(mongoDbSettings);
@@ -65,6 +72,26 @@ namespace Orders
             app.MapControllers();
 
             app.Run();
+        }
+
+        private static void ConfigureLogging(WebApplicationBuilder builder, ElasticConfiguration elasticConfig)
+        {
+            var logger = new LoggerConfiguration()
+                .Enrich.FromLogContext()
+                .Enrich.WithExceptionDetails()
+                .WriteTo.Debug()
+                .WriteTo.Console()
+                .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticConfig.Uri))
+                {
+                    AutoRegisterTemplate = true,
+                    IndexFormat = elasticConfig.IndexFormat,
+                    NumberOfShards = elasticConfig.NumberOfShards,
+                    NumberOfReplicas = elasticConfig.NumberOfReplicas
+                })
+                .CreateLogger();
+
+            builder.Logging.ClearProviders();
+            builder.Logging.AddSerilog(logger);
         }
     }
 }
