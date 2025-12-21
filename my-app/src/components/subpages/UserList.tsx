@@ -89,8 +89,8 @@ const UserList = () => {
           <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Price</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Country</TableCell>
               <TableCell></TableCell>
             </TableRow>
           </TableHead>

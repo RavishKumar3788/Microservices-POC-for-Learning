@@ -23,8 +23,6 @@ type ProductListProps = {
 };
 
 const ProductList = ({ userId, asModel }: ProductListProps) => {
-  console.log(userId);
-  console.log(asModel);
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
   const [orderDialogOpen, setOrderDialogOpen] = useState(false);

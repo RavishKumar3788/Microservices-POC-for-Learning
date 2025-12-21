@@ -8,7 +8,7 @@ namespace Orders.ViewModels
         [StringLength(100)]
         public string UserId { get; set; } = null!;
 
-        
+
         [Required]
         [StringLength(100)]
         public string ProductId { get; set; } = null!;
@@ -20,8 +20,5 @@ namespace Orders.ViewModels
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1")]
         public int Quantity { get; set; }
-
-        [StringLength(50)]
-        public string? OrderStatus { get; set; }
     }
 }

@@ -107,7 +107,6 @@ namespace Orders.Controllers
                     ProductId = orderViewModel.ProductId,
                     ProductPrice = orderViewModel.ProductPrice,
                     Quantity = orderViewModel.Quantity,
-                    OrderStatus = orderViewModel.OrderStatus ?? "Pending"
                 };
 
                 _logger.LogInformation("Request received to create new order for user: {UserId}", order.UserId);
@@ -151,7 +150,6 @@ namespace Orders.Controllers
                     ProductId = orderViewModel.ProductId,
                     ProductPrice = orderViewModel.ProductPrice,
                     Quantity = orderViewModel.Quantity,
-                    OrderStatus = orderViewModel.OrderStatus ?? "Pending"
                 };
 
                 _logger.LogInformation("Request received to update order with ID: {OrderId}", id);

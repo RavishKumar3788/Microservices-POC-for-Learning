@@ -15,6 +15,8 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import { TransitionProps } from "@mui/material/transitions";
 import { Product } from "../../services/productService";
+import { orderService, OrderViewModel } from "../../services/orderService";
+
 
 const Transition = React.forwardRef(function Transition(
     props: TransitionProps & {
@@ -39,29 +41,31 @@ const PlaceOrderDialog: React.FC<PlaceOrderDialogProps> = ({
     userId,
 }) => {
     const [quantity, setQuantity] = useState<number>(1);
-    const [notes, setNotes] = useState<string>("");
 
     const handlePlaceOrder = useCallback(() => {
         if (!product || !userId) return;
 
-        // TODO: Implement order placement logic here
-        console.log("Placing order:", {
+        const orderDetails: OrderViewModel = {
             userId,
             productId: product.id,
+            productPrice: product.price,
             quantity,
-            notes,
-            totalPrice: product.price * quantity,
+        };
+
+        orderService.placeOrder(orderDetails).then((order) => {
+            console.log("Order placed successfully:", order);
+            // Reset form and close dialog
+            setQuantity(1);
+            onClose();
+        }).catch((error) => {
+            console.error("Error placing order:", error);
         });
 
-        // Reset form and close dialog
-        setQuantity(1);
-        setNotes("");
-        onClose();
-    }, [product, userId, quantity, notes, onClose]);
+
+    }, [product, userId, quantity, onClose]);
 
     const handleClose = useCallback(() => {
         setQuantity(1);
-        setNotes("");
         onClose();
     }, [onClose]);
 
@@ -112,17 +116,6 @@ const PlaceOrderDialog: React.FC<PlaceOrderDialogProps> = ({
                         value={quantity}
                         onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                         inputProps={{ min: 1 }}
-                        sx={{ mb: 2 }}
-                    />
-
-                    <TextField
-                        label="Order Notes (Optional)"
-                        multiline
-                        rows={3}
-                        fullWidth
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        placeholder="Add any special instructions..."
                         sx={{ mb: 2 }}
                     />
 

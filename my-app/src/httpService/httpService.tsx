@@ -49,8 +49,8 @@ const getRequest = async <T,>(endpoint: string): Promise<T> => {
 
 export const httpService = {
   get: <T,>(endpoint: string) => getRequest<T>(endpoint),
-  post: (endpoint: string, data: any, headers = {}) =>
-    request(endpoint, "POST", data, headers),
+  post: <T, U>(endpoint: string, data: U, headers = {}) =>
+    request<T, U>(endpoint, "POST", data, headers),
   put: (endpoint: string, data: any, headers = {}) =>
     request(endpoint, "PUT", data, headers),
   delete: (endpoint: string, headers = {}) =>

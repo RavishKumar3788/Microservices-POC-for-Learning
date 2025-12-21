@@ -25,9 +25,6 @@ namespace Orders.Models
         [BsonElement("totalPrice")]
         public decimal TotalPrice { get; set; }
 
-        [BsonElement("orderStatus")]
-        public string OrderStatus { get; set; } = "Pending";
-
         [BsonElement("createdAt")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

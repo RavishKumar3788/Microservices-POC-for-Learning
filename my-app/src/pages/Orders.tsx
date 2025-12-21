@@ -1,4 +1,5 @@
 import { Container, Typography } from "@mui/material";
+import OrderList from "../components/subpages/OrderList";
 
 const Orders = () => {
   return (
@@ -6,9 +7,7 @@ const Orders = () => {
       <Typography variant="h4" component="h1" gutterBottom>
         Orders
       </Typography>
-      <Typography variant="body1">
-        View and manage your orders here...
-      </Typography>
+      <OrderList />
     </Container>
   );
 };
