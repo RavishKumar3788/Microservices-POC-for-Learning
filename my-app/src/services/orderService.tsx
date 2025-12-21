@@ -41,7 +41,7 @@ const placeOrder = async (order: OrderViewModel): Promise<Order> => {
     return response;
 }
 
-const OrderWithDetails = async (): Promise<OrderWithDetails[]> => {
+const getOrderWithDetails = async (): Promise<OrderWithDetails[]> => {
     const [orders, products, users] = await Promise.all([
         getOrders(),
         productService.getProducts(),
@@ -66,5 +66,5 @@ const OrderWithDetails = async (): Promise<OrderWithDetails[]> => {
 export const orderService = {
     getOrders,
     placeOrder,
-    OrderWithDetails,
+    getOrderWithDetails,
 };

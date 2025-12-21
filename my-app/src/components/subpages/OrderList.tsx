@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { orderService, OrderWithDetails } from '../../services/orderService';
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
 
 const OrderList: React.FC = () => {
@@ -15,7 +15,7 @@ const OrderList: React.FC = () => {
     const fetchOrders = async () => {
         try {
             setLoading(true);
-            const data = await orderService.OrderWithDetails();
+            const data = await orderService.getOrderWithDetails();
             setOrders(data);
             setError(null);
         } catch (err) {
