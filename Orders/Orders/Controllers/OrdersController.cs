@@ -51,6 +51,50 @@ namespace Orders.Controllers
         }
 
         /// <summary>
+        /// Streams all orders using Server-Sent Events.
+        /// Continuously sends order updates to the client every 5 seconds.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token to stop the stream.</param>
+        /// <returns>A stream of order data.</returns>
+        [HttpGet("stream")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task StreamOrders(CancellationToken cancellationToken)
+        {
+            Response.ContentType = "text/event-stream";
+            Response.Headers.Append("Cache-Control", "no-cache");
+            Response.Headers.Append("Connection", "keep-alive");
+
+            _logger.LogInformation("Client connected to order stream");
+
+            try
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    var orders = await _orderService.GetAllOrdersAsync();
+                    var json = System.Text.Json.JsonSerializer.Serialize(orders, new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                    });
+
+                    await Response.WriteAsync($"data: {json}\n\n", cancellationToken);
+                    await Response.Body.FlushAsync(cancellationToken);
+
+                    _logger.LogInformation("Sent {Count} orders to streaming client", orders.Count);
+
+                    await Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Client disconnected from order stream");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while streaming orders");
+            }
+        }
+
+        /// <summary>
         /// Gets an order by ID.
         /// </summary>
         /// <param name="id">The ID of the order.</param>

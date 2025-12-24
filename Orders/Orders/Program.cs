@@ -1,5 +1,6 @@
 using System.Reflection;
 using Microsoft.OpenApi.Models;
+using Orders.ExternalServices;
 using Orders.Repositories;
 using Orders.Services;
 using Orders.Settings;
@@ -18,10 +19,11 @@ namespace Orders
             // Configure settings from appsettings.json
             var mongoDbSettings = builder.Configuration.GetSection("MongoDb").Get<MongoDbSettings>();
             var elasticSettings = builder.Configuration.GetSection("ElasticConfiguration").Get<ElasticConfiguration>();
+            var externalServicesSettings = builder.Configuration.GetSection("ExternalServices").Get<ExternalServicesSettings>();
 
-            if (mongoDbSettings == null || elasticSettings == null)
+            if (mongoDbSettings == null || elasticSettings == null || externalServicesSettings == null)
             {
-                throw new InvalidOperationException("Configuration sections 'MongoDb' or 'ElasticConfiguration' are missing or invalid.");
+                throw new InvalidOperationException("Configuration sections 'MongoDb', 'ElasticConfiguration', or 'ExternalServices' are missing or invalid.");
             }
 
             // Configure Serilog with Elasticsearch
@@ -29,10 +31,27 @@ namespace Orders
 
             // Add MongoDB settings
             builder.Services.AddSingleton(mongoDbSettings);
+            builder.Services.AddSingleton(externalServicesSettings);
 
             // Add services to the container
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IOrderService, OrderService>();
+
+            // Configure HttpClients for external services
+            builder.Services.AddHttpClient<IProductServiceClient, ProductServiceClient>(client =>
+            {
+                client.BaseAddress = new Uri(externalServicesSettings.ProductsServiceUrl);
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
+
+            builder.Services.AddHttpClient<IUserServiceClient, UserServiceClient>(client =>
+            {
+                client.BaseAddress = new Uri(externalServicesSettings.UsersServiceUrl);
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
+
+            // Add PlaceOrders background service
+            builder.Services.AddHostedService<PlaceOrders>();
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
