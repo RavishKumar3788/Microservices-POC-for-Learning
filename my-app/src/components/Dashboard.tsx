@@ -15,6 +15,7 @@ import {
 } from "react-simple-maps";
 import { orderService, OrderWithDetails } from "../services/orderService";
 import { countryCoordinates } from "../constants/countryCoordinates";
+import { AnimatedCounter } from "./AnimatedCounter";
 import PublicIcon from "@mui/icons-material/Public";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 
@@ -149,7 +150,12 @@ const Dashboard = () => {
                                     <Typography color="text.secondary" gutterBottom>
                                         Total Orders
                                     </Typography>
-                                    <Typography variant="h4">{totalOrders}</Typography>
+                                    <Typography variant="h4">
+                                        <AnimatedCounter
+                                            value={totalOrders}
+                                            formatValue={(v) => Math.floor(v).toString()}
+                                        />
+                                    </Typography>
                                 </Box>
                                 <ShoppingCartIcon
                                     sx={{ fontSize: 48, color: "#0088FE", opacity: 0.5 }}
@@ -166,7 +172,12 @@ const Dashboard = () => {
                                     <Typography color="text.secondary" gutterBottom>
                                         Countries
                                     </Typography>
-                                    <Typography variant="h4">{countryData.length}</Typography>
+                                    <Typography variant="h4">
+                                        <AnimatedCounter
+                                            value={countryData.length}
+                                            formatValue={(v) => Math.floor(v).toString()}
+                                        />
+                                    </Typography>
                                 </Box>
                                 <PublicIcon
                                     sx={{ fontSize: 48, color: "#00C49F", opacity: 0.5 }}
@@ -183,7 +194,13 @@ const Dashboard = () => {
                                     Total Revenue
                                 </Typography>
                                 <Typography variant="h4">
-                                    ${totalRevenue.toFixed(2)}
+                                    <span style={{
+                                        position: 'relative',
+                                        top: '-10px',
+                                    }}>$</span><AnimatedCounter
+                                        value={totalRevenue}
+                                        formatValue={(v) => v.toFixed(2)}
+                                    />
                                 </Typography>
                             </Box>
                         </CardContent>
