@@ -1,0 +1,123 @@
+# ==============================================================================
+# STEP 7: DEPLOY ELASTICSEARCH
+# ==============================================================================
+# 
+# What is Elasticsearch?
+# - Search and analytics engine
+# - Stores and indexes logs from all services
+# - Makes it easy to search through application logs
+# 
+# Why do we need it?
+# - Centralized logging for all microservices
+# - Search logs across all services in one place
+# - Debug issues by searching error messages
+# 
+# ==============================================================================
+
+---
+# Elasticsearch Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticsearch
+  namespace: microservices-poc
+  labels:
+    app: elasticsearch
+spec:
+  replicas: 1                              # Single node for learning
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+      - name: elasticsearch
+        image: elasticsearch:7.17.0        # Specific version for stability
+        ports:
+        - containerPort: 9200              # HTTP API port
+          name: http
+        - containerPort: 9300              # Transport port (node-to-node)
+          name: transport
+        env:
+        - name: discovery.type
+          value: "single-node"             # Single node mode (simple setup)
+        - name: ES_JAVA_OPTS
+          value: "-Xms512m -Xmx512m"       # Java heap size (min and max)
+        - name: xpack.security.enabled
+          value: "false"                   # Disable security for learning
+        volumeMounts:
+        - name: elasticsearch-storage
+          mountPath: /usr/share/elasticsearch/data  # Elasticsearch data directory
+        resources:
+          requests:
+            memory: "1Gi"                  # Elasticsearch needs more memory
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        readinessProbe:                    # Check if Elasticsearch is ready
+          httpGet:
+            path: /_cluster/health         # Health check endpoint
+            port: 9200
+          initialDelaySeconds: 60          # ES takes time to start
+          periodSeconds: 10
+        livenessProbe:                     # Check if Elasticsearch is alive
+          httpGet:
+            path: /_cluster/health
+            port: 9200
+          initialDelaySeconds: 90
+          periodSeconds: 30
+      volumes:
+      - name: elasticsearch-storage
+        persistentVolumeClaim:
+          claimName: elasticsearch-pvc
+
+---
+# Elasticsearch Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+  namespace: microservices-poc
+  labels:
+    app: elasticsearch
+spec:
+  selector:
+    app: elasticsearch
+  ports:
+  - port: 9200                             # HTTP API
+    targetPort: 9200
+    protocol: TCP
+    name: http
+  - port: 9300                             # Transport
+    targetPort: 9300
+    protocol: TCP
+    name: transport
+  type: ClusterIP
+
+# ==============================================================================
+# How to apply this file:
+#   kubectl apply -f step7-elasticsearch.yaml
+#
+# How to verify:
+#   kubectl get deployment elasticsearch -n microservices-poc
+#   kubectl get pod -l app=elasticsearch -n microservices-poc
+#   kubectl logs -f deployment/elasticsearch -n microservices-poc
+#
+# Wait for Elasticsearch to be ready (takes 1-2 minutes):
+#   kubectl wait --for=condition=ready pod -l app=elasticsearch -n microservices-poc --timeout=300s
+#
+# Test Elasticsearch:
+#   kubectl port-forward -n microservices-poc service/elasticsearch 9200:9200
+#   curl http://localhost:9200
+#   Should return cluster information in JSON
+#
+# Connection URL for applications:
+#   http://elasticsearch:9200
+#
+# Note: Elasticsearch requires more resources than other services
+# If it fails to start, check: kubectl describe pod -l app=elasticsearch -n microservices-poc
+# ==============================================================================

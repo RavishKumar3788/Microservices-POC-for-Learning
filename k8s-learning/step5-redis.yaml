@@ -1,0 +1,101 @@
+# ==============================================================================
+# STEP 5: DEPLOY REDIS CACHE
+# ==============================================================================
+# 
+# What is Redis?
+# - In-memory data store used for caching
+# - Makes applications faster by storing frequently accessed data
+# - Our microservices use it to cache API responses
+# 
+# Why do we need it?
+# - Reduces database load
+# - Improves response times
+# - Stores session data
+# 
+# ==============================================================================
+
+---
+# Redis Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: microservices-poc
+  labels:
+    app: redis
+spec:
+  replicas: 1                             # Single instance for learning
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis/redis-stack:latest   # Redis with RedisInsight UI
+        ports:
+        - containerPort: 6379             # Redis default port
+          name: redis
+        - containerPort: 8001             # RedisInsight web UI port
+          name: redis-insight
+        volumeMounts:
+        - name: redis-storage
+          mountPath: /data                # Redis data directory
+        resources:
+          requests:
+            memory: "128Mi"               # Redis is lightweight
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+      volumes:
+      - name: redis-storage
+        persistentVolumeClaim:
+          claimName: redis-pvc
+
+---
+# Redis Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis                             # Service name for connections
+  namespace: microservices-poc
+  labels:
+    app: redis
+spec:
+  selector:
+    app: redis
+  ports:
+  - port: 6379                            # Redis port
+    targetPort: 6379
+    protocol: TCP
+    name: redis
+  - port: 8001                            # RedisInsight UI port
+    targetPort: 8001
+    protocol: TCP
+    name: redis-insight
+  type: ClusterIP                         # Internal only
+
+# ==============================================================================
+# How to apply this file:
+#   kubectl apply -f step5-redis.yaml
+#
+# How to verify:
+#   kubectl get deployment redis -n microservices-poc
+#   kubectl get pod -l app=redis -n microservices-poc
+#   kubectl logs -f deployment/redis -n microservices-poc
+#
+# Connection string for applications:
+#   redis://redis:6379
+#
+# Access RedisInsight UI (for debugging):
+#   kubectl port-forward -n microservices-poc service/redis 8001:8001
+#   Then open: http://localhost:8001
+#
+# Test Redis connection:
+#   kubectl exec -it deployment/redis -n microservices-poc -- redis-cli ping
+#   Should return: PONG
+# ==============================================================================

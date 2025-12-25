@@ -1,0 +1,130 @@
+# ==============================================================================
+# STEP 12: DEPLOY NGINX REVERSE PROXY
+# ==============================================================================
+# 
+# What is a Reverse Proxy?
+# - Acts as a gateway to your microservices
+# - Single entry point for all requests
+# - Routes requests to appropriate backend services
+# 
+# Why do we need it?
+# - Users access ONE URL (e.g., http://localhost:8080)
+# - Nginx routes /api/products → products-app
+# - Nginx routes /api/users → user-app
+# - Nginx routes / → react-app
+# 
+# Benefits:
+# - Simplified access (one port instead of many)
+# - Load balancing across replicas
+# - SSL termination (add HTTPS later)
+# - API gateway functionality
+# 
+# ==============================================================================
+
+---
+# Nginx Proxy Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-proxy
+  namespace: microservices-poc
+  labels:
+    app: nginx-proxy
+    tier: gateway                          # Gateway/proxy layer
+spec:
+  replicas: 2                              # 2 nginx instances
+  selector:
+    matchLabels:
+      app: nginx-proxy
+  template:
+    metadata:
+      labels:
+        app: nginx-proxy
+        tier: gateway
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine                # Lightweight nginx
+        ports:
+        - containerPort: 80
+          name: http
+        volumeMounts:
+        - name: nginx-config               # Mount ConfigMap as file
+          mountPath: /etc/nginx/nginx.conf # Nginx config location
+          subPath: nginx.conf              # Use nginx.conf from ConfigMap
+          readOnly: true                   # Read-only mount
+        resources:
+          requests:
+            memory: "64Mi"                 # Nginx is very lightweight
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        livenessProbe:
+          httpGet:
+            path: /                        # Check if nginx responds
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: nginx-config                 # Reference ConfigMap we created in step 2
+        configMap:
+          name: nginx-config               # ConfigMap name
+
+---
+# Nginx Proxy Service (Internal)
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-proxy                        # Service name
+  namespace: microservices-poc
+  labels:
+    app: nginx-proxy
+spec:
+  selector:
+    app: nginx-proxy
+  ports:
+  - port: 80                               # Service port
+    targetPort: 80
+    protocol: TCP
+    name: http
+  type: ClusterIP                          # Internal for now
+                                           # We'll expose it externally in next step
+
+# ==============================================================================
+# How to apply this file:
+#   kubectl apply -f step12-nginx-proxy.yaml
+#
+# How to verify:
+#   kubectl get deployment nginx-proxy -n microservices-poc
+#   kubectl get pods -l app=nginx-proxy -n microservices-poc
+#   kubectl logs -f deployment/nginx-proxy -n microservices-poc
+#
+# Test the proxy (this is your main access point):
+#   kubectl port-forward -n microservices-poc service/nginx-proxy 8080:80
+#   
+#   Open: http://localhost:8080 (React app)
+#   Test: http://localhost:8080/api/products
+#   Test: http://localhost:8080/api/users
+#   Test: http://localhost:8080/api/orders
+#
+# Understanding the Flow:
+# 1. User visits http://localhost:8080
+# 2. Request goes to nginx-proxy
+# 3. Nginx checks the URL path:
+#    - / → forwards to react-app:80
+#    - /api/products → forwards to products-app:8080/api/products
+#    - /api/users → forwards to user-app:8080/api/users
+#    - /api/orders → forwards to orders-app:8080/api/orders
+# 4. Backend service processes request
+# 5. Response flows back through nginx to user
+#
+# Check nginx configuration:
+#   kubectl exec -it deployment/nginx-proxy -n microservices-poc -- cat /etc/nginx/nginx.conf
+# ==============================================================================

@@ -1,0 +1,34 @@
+# ==============================================================================
+# STEP 1: CREATE A NAMESPACE
+# ==============================================================================
+# 
+# What is a Namespace?
+# - A namespace is like a virtual cluster inside your Kubernetes cluster
+# - It provides isolation between different environments (dev, test, prod)
+# - Resources in one namespace are separated from resources in another
+# 
+# Why do we need it?
+# - Keeps our microservices organized and separate from other applications
+# - Prevents naming conflicts
+# - Allows us to apply resource quotas and access controls
+# 
+# ==============================================================================
+
+apiVersion: v1                    # API version for namespace resource
+kind: Namespace                   # Type of resource we're creating
+metadata:
+  name: microservices-poc         # Name of our namespace (use this in all future commands)
+  labels:                         # Labels help organize and select resources
+    name: microservices-poc
+    environment: learning         # You can add any labels you want
+
+# ==============================================================================
+# How to apply this file:
+#   kubectl apply -f step1-namespace.yaml
+#
+# How to verify:
+#   kubectl get namespaces
+#   kubectl get ns microservices-poc
+#
+# All future resources will be created in this namespace
+# ==============================================================================

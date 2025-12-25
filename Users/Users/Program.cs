@@ -107,6 +107,9 @@ namespace Users
 
             app.MapControllers();
 
+            // Health check endpoint for Kubernetes
+            app.MapGet("/health", () => Results.Ok("Healthy"));
+
             app.Run();
         }
 

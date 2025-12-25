@@ -1,0 +1,122 @@
+# ==============================================================================
+# STEP 8: DEPLOY PRODUCTS MICROSERVICE
+# ==============================================================================
+# 
+# What is this?
+# - Your Products API microservice
+# - Manages product catalog and inventory
+# - Built with .NET and containerized
+# 
+# How it works:
+# - Uses Docker image from Docker Hub (ravishchauhan/products-app)
+# - Connects to MongoDB for data storage
+# - Connects to Redis for caching
+# - Connects to Elasticsearch for logging
+# 
+# ==============================================================================
+
+---
+# Products App Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products-app
+  namespace: microservices-poc
+  labels:
+    app: products-app
+    tier: backend                          # Layer in architecture
+spec:
+  replicas: 2                              # Run 2 instances for high availability
+  selector:
+    matchLabels:
+      app: products-app
+  template:
+    metadata:
+      labels:
+        app: products-app
+        tier: backend
+    spec:
+      containers:
+      - name: products-app
+        image: ravishchauhan/products-app:latest   # Your Docker image
+        imagePullPolicy: Always            # Always pull latest image
+        ports:
+        - containerPort: 8080              # Application listens on port 8080
+          name: http
+        env:                               # Environment variables for the app
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"
+        - name: ASPNETCORE_URLS
+          value: "http://+:8080"
+        # Add connection strings as environment variables
+        # Your app will read these to connect to databases
+        resources:
+          requests:                        # Minimum guaranteed resources
+            memory: "256Mi"
+            cpu: "250m"
+          limits:                          # Maximum allowed resources
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:                     # Restart if app becomes unhealthy
+          httpGet:
+            path: /health                  # Health check endpoint
+            port: 8080
+          initialDelaySeconds: 30          # Wait 30s after start
+          periodSeconds: 10                # Check every 10s
+          failureThreshold: 3              # Restart after 3 failures
+        readinessProbe:                    # Don't send traffic until ready
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 5
+          failureThreshold: 3
+
+---
+# Products App Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: products-app                       # Service name (used by nginx and other services)
+  namespace: microservices-poc
+  labels:
+    app: products-app
+spec:
+  selector:
+    app: products-app                      # Route to pods with this label
+  ports:
+  - port: 8080                             # Service port
+    targetPort: 8080                       # Container port
+    protocol: TCP
+    name: http
+  type: ClusterIP                          # Internal only (accessed via nginx)
+
+# ==============================================================================
+# How to apply this file:
+#   kubectl apply -f step8-products-app.yaml
+#
+# How to verify:
+#   kubectl get deployment products-app -n microservices-poc
+#   kubectl get pods -l app=products-app -n microservices-poc
+#   kubectl logs -f deployment/products-app -n microservices-poc
+#
+# Check if healthy:
+#   kubectl get pods -l app=products-app -n microservices-poc
+#   Look for "Running" status and "2/2" ready (2 replicas)
+#
+# Test the service:
+#   kubectl port-forward -n microservices-poc service/products-app 8080:8080
+#   curl http://localhost:8080/health
+#
+# Scale the service:
+#   kubectl scale deployment products-app --replicas=3 -n microservices-poc
+#
+# View logs from all replicas:
+#   kubectl logs -f -l app=products-app -n microservices-poc
+#
+# Understanding Replicas:
+# - replicas: 2 means Kubernetes maintains 2 pods
+# - If one pod crashes, Kubernetes starts a new one automatically
+# - Load is balanced across all pods
+# - You can scale up/down anytime without downtime
+# ==============================================================================

@@ -23,21 +23,6 @@ namespace Orders.Services
             stoppingToken.Register(() =>
                 _logger.LogInformation("PlaceOrders background service is stopping."));
 
-            // Fetch products and users once before the loop
-            List<ProductDto> products;
-            List<UserDto> users;
-
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                var productServiceClient = scope.ServiceProvider.GetRequiredService<IProductServiceClient>();
-                var userServiceClient = scope.ServiceProvider.GetRequiredService<IUserServiceClient>();
-
-                products = await productServiceClient.GetAllProductsAsync();
-                users = await userServiceClient.GetAllUsersAsync();
-            }
-
-            _logger.LogInformation("Fetched {ProductsCount} products and {UsersCount} users for order generation.",
-                products.Count, users.Count);
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -47,6 +32,16 @@ namespace Orders.Services
 
                     using (var scope = _serviceProvider.CreateScope())
                     {
+                        // Fetch products and users once before the loop
+                        var productServiceClient = scope.ServiceProvider.GetRequiredService<IProductServiceClient>();
+                        var userServiceClient = scope.ServiceProvider.GetRequiredService<IUserServiceClient>();
+
+                        var products = await productServiceClient.GetAllProductsAsync();
+                        var users = await userServiceClient.GetAllUsersAsync();
+
+                        _logger.LogInformation("Fetched {ProductsCount} products and {UsersCount} users for order generation.",
+                            products.Count, users.Count);
+
                         var orderRepository = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
 
                         if (products.Count > 0 && users.Count > 0)

@@ -1,0 +1,108 @@
+# ==============================================================================
+# STEP 4: DEPLOY MONGODB DATABASE
+# ==============================================================================
+# 
+# What is a Deployment?
+# - Manages a set of identical pods
+# - Ensures desired number of pods are always running
+# - Handles rolling updates and rollbacks
+# 
+# What is a Service?
+# - Provides a stable network endpoint for pods
+# - Load balances traffic across pods
+# - Pods can die/restart, but service IP stays the same
+# 
+# Why MongoDB?
+# - Our microservices use MongoDB to store data
+# - Products, Users, Orders all connect to this database
+# 
+# ==============================================================================
+
+---
+# MongoDB Deployment - Creates and manages MongoDB pods
+apiVersion: apps/v1                       # API version for Deployment
+kind: Deployment                          # Type of resource
+metadata:
+  name: mongodb                           # Name of this deployment
+  namespace: microservices-poc
+  labels:
+    app: mongodb                          # Labels for organization
+spec:
+  replicas: 1                             # Run 1 pod (for learning; use 3+ in production)
+  selector:
+    matchLabels:
+      app: mongodb                        # Select pods with this label
+  template:                               # Template for creating pods
+    metadata:
+      labels:
+        app: mongodb                      # Label for the pods
+    spec:
+      containers:                         # List of containers in the pod
+      - name: mongodb                     # Container name
+        image: mongo:latest               # Docker image to use
+        ports:
+        - containerPort: 27017            # MongoDB default port
+          name: mongodb                   # Name for this port
+        volumeMounts:                     # Mount storage into container
+        - name: mongodb-storage           # Reference to volume below
+          mountPath: /data/db             # Where to mount in container (MongoDB data directory)
+        resources:                        # Resource limits (important!)
+          requests:                       # Minimum resources guaranteed
+            memory: "256Mi"               # 256 megabytes RAM
+            cpu: "250m"                   # 0.25 CPU cores (250 millicores)
+          limits:                         # Maximum resources allowed
+            memory: "512Mi"               # 512 megabytes RAM max
+            cpu: "500m"                   # 0.5 CPU cores max
+        env:                              # Environment variables
+        - name: MONGO_INITDB_DATABASE
+          value: "microservices"          # Initial database name
+      volumes:                            # Define volumes for the pod
+      - name: mongodb-storage             # Volume name
+        persistentVolumeClaim:            # Use PVC we created earlier
+          claimName: mongodb-pvc          # Reference to PVC
+
+---
+# MongoDB Service - Provides stable network access to MongoDB
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb                           # Service name (used in connection strings)
+  namespace: microservices-poc
+  labels:
+    app: mongodb
+spec:
+  selector:
+    app: mongodb                          # Route traffic to pods with this label
+  ports:
+  - port: 27017                           # Port the service listens on
+    targetPort: 27017                     # Port on the pod to forward to
+    protocol: TCP                         # Protocol (TCP or UDP)
+    name: mongodb                         # Name for this port
+  type: ClusterIP                         # Service type:
+                                          # - ClusterIP: Only accessible within cluster (default)
+                                          # - NodePort: Accessible from outside via node IP
+                                          # - LoadBalancer: Creates external load balancer (cloud only)
+
+# ==============================================================================
+# How to apply this file:
+#   kubectl apply -f step4-mongodb.yaml
+#
+# How to verify:
+#   kubectl get deployments -n microservices-poc
+#   kubectl get pods -n microservices-poc
+#   kubectl get services -n microservices-poc
+#
+# Check if MongoDB is running:
+#   kubectl logs -f deployment/mongodb -n microservices-poc
+#
+# Connection string for other services:
+#   mongodb://mongodb:27017/microservices
+#   (uses service name "mongodb" which Kubernetes DNS resolves)
+#
+# Understanding Pod Status:
+# - Pending: Waiting to be scheduled on a node
+# - ContainerCreating: Pulling image and starting container
+# - Running: Container is running successfully
+# - CrashLoopBackOff: Container keeps crashing and restarting
+# - ImagePullBackOff: Can't pull the Docker image
+# ==============================================================================

@@ -15,6 +15,7 @@ services:
     restart: unless-stopped
 
   react-app:
+    image: ravishchauhan/react-app:latest
     build:
       context: ./my-app
       dockerfile: Dockerfile
@@ -26,6 +27,7 @@ services:
     networks:
       - common-net
   products-app:
+    image: ravishchauhan/products-app:latest
     build:
       context: ./Products
       dockerfile: Dockerfile
@@ -42,6 +44,7 @@ services:
       - common-net
 
   user-app:
+    image: ravishchauhan/user-app:latest
     build:
       context: ./Users
       dockerfile: Dockerfile
@@ -58,6 +61,7 @@ services:
       - common-net
 
   orders-app:
+    image: ravishchauhan/orders-app:latest
     build:
       context: ./Orders
       dockerfile: Dockerfile

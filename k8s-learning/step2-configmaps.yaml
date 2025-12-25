@@ -1,0 +1,124 @@
+# ==============================================================================
+# STEP 2: CREATE CONFIGMAPS
+# ==============================================================================
+# 
+# What is a ConfigMap?
+# - A ConfigMap stores configuration data as key-value pairs
+# - Separates configuration from application code
+# - Can be mounted as files or used as environment variables
+# 
+# Why do we need it?
+# - Our Nginx proxy needs routing configuration
+# - Keeps configuration separate from Docker images
+# - Easy to update without rebuilding images
+# 
+# ==============================================================================
+
+---
+# ConfigMap for Nginx Reverse Proxy
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config                      # Name to reference this config
+  namespace: microservices-poc            # Must be in our namespace
+  labels:
+    app: nginx-proxy
+data:
+  # This nginx.conf will be mounted as a file in the nginx container
+  nginx.conf: |
+    # Events block - handles connection processing
+    events {
+        worker_connections 1024;          # Max simultaneous connections
+    }
+
+    # HTTP block - main web server configuration
+    http {
+        # DNS resolver for Kubernetes - resolves service names to IPs
+        resolver kube-dns.kube-system.svc.cluster.local valid=30s;
+
+        # Upstream blocks define backend services
+        # Kubernetes DNS: <service-name>.<namespace>.svc.cluster.local
+        # Short form: <service-name> (same namespace)
+        
+        upstream react_app {
+            server react-app:80;          # React app service on port 80
+        }
+
+        upstream products_api {
+            server products-app:8080;     # Products API on port 8080
+        }
+
+        upstream users_api {
+            server user-app:8080;         # Users API on port 8080
+        }
+
+        upstream orders_api {
+            server orders-app:8080;       # Orders API on port 8080
+        }
+
+        # Server block - handles incoming requests
+        server {
+            listen 80;                    # Listen on port 80
+            server_name localhost;        # Server name
+
+            # Location blocks - route requests to different services
+            
+            # Root path - serve React app
+            location / {
+                proxy_pass http://react_app;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
+            }
+
+            # Products API routes
+            location /api/products {
+                proxy_pass http://products_api/api/products;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+            }
+
+            # Users API routes
+            location /api/users {
+                proxy_pass http://users_api/api/users;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+            }
+
+            # Orders API routes
+            location /api/orders {
+                proxy_pass http://orders_api/api/orders;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+            }
+
+            # Swagger documentation endpoints
+            location /products-swagger/ {
+                proxy_pass http://products_api/swagger/;
+                proxy_set_header Host $host;
+            }
+
+            location /users-swagger/ {
+                proxy_pass http://users_api/swagger/;
+                proxy_set_header Host $host;
+            }
+
+            location /orders-swagger/ {
+                proxy_pass http://orders_api/swagger/;
+                proxy_set_header Host $host;
+            }
+        }
+    }
+
+# ==============================================================================
+# How to apply this file:
+#   kubectl apply -f step2-configmaps.yaml
+#
+# How to verify:
+#   kubectl get configmaps -n microservices-poc
+#   kubectl describe configmap nginx-config -n microservices-poc
+#
+# This configuration will be mounted into the nginx container later
+# ==============================================================================

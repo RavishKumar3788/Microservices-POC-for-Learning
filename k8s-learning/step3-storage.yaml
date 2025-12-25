@@ -1,0 +1,89 @@
+# ==============================================================================
+# STEP 3: CREATE PERSISTENT STORAGE
+# ==============================================================================
+# 
+# What is a PersistentVolumeClaim (PVC)?
+# - A request for storage by a user/pod
+# - Abstracts storage details from the application
+# - Data persists even if pods are deleted/recreated
+# 
+# Why do we need it?
+# - Databases need persistent storage to keep data
+# - Without PVC, data is lost when pod restarts
+# - Separates storage lifecycle from pod lifecycle
+# 
+# How does it work?
+# 1. You create a PVC requesting storage (e.g., 5GB)
+# 2. Kubernetes finds/creates a PersistentVolume (PV) that matches
+# 3. The PVC binds to the PV
+# 4. Pods can mount this PVC to store data
+# 
+# ==============================================================================
+
+---
+# Storage for Redis
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc                         # Name to reference this storage
+  namespace: microservices-poc
+  labels:
+    app: redis
+spec:
+  accessModes:
+    - ReadWriteOnce                       # Can be mounted by one node (RWO)
+                                          # Other options: ReadWriteMany (RWX), ReadOnlyMany (ROX)
+  resources:
+    requests:
+      storage: 5Gi                        # Request 5 gigabytes of storage
+  # storageClassName: standard            # Uncomment to specify storage class
+                                          # Leave empty to use default storage class
+
+---
+# Storage for MongoDB
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc
+  namespace: microservices-poc
+  labels:
+    app: mongodb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi                       # MongoDB needs more space
+
+---
+# Storage for Elasticsearch
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: elasticsearch-pvc
+  namespace: microservices-poc
+  labels:
+    app: elasticsearch
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi                       # Elasticsearch needs more space for logs
+
+# ==============================================================================
+# How to apply this file:
+#   kubectl apply -f step3-storage.yaml
+#
+# How to verify:
+#   kubectl get pvc -n microservices-poc
+#   kubectl describe pvc redis-pvc -n microservices-poc
+#
+# Understanding PVC Status:
+# - Pending: Waiting for a PV to be created/bound
+# - Bound: Successfully bound to a PV, ready to use
+# - Lost: PV was deleted but PVC still exists
+#
+# Note: Your cluster must have a default StorageClass or you need to create PVs manually
+# Check with: kubectl get storageclass
+# ==============================================================================

@@ -103,6 +103,9 @@ namespace Products
             app.UseAuthorization();
             app.MapControllers();
 
+            // Health check endpoint for Kubernetes
+            app.MapGet("/health", () => Results.Ok("Healthy"));
+
             app.Run();
         }
 

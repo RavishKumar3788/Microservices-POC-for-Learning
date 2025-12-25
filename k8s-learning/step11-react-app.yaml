@@ -1,0 +1,105 @@
+# ==============================================================================
+# STEP 11: DEPLOY REACT FRONTEND
+# ==============================================================================
+# 
+# What is this?
+# - Your React web application
+# - The user interface for your microservices
+# - Runs in users' browsers
+# 
+# How it works:
+# - Nginx serves the React static files (HTML, JS, CSS)
+# - React makes API calls to your backend services
+# - Users interact with this interface
+# 
+# ==============================================================================
+
+---
+# React App Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-app
+  namespace: microservices-poc
+  labels:
+    app: react-app
+    tier: frontend                         # Frontend layer
+spec:
+  replicas: 2                              # 2 replicas for high availability
+  selector:
+    matchLabels:
+      app: react-app
+  template:
+    metadata:
+      labels:
+        app: react-app
+        tier: frontend
+    spec:
+      containers:
+      - name: react-app
+        image: ravishchauhan/react-app:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80                # Nginx serves on port 80
+          name: http
+        env:
+        - name: NODE_ENV
+          value: "production"
+        resources:
+          requests:                        # React apps need less resources
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:                     # Simple HTTP check
+          httpGet:
+            path: /                        # Check root path
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+# React App Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: react-app
+  namespace: microservices-poc
+  labels:
+    app: react-app
+spec:
+  selector:
+    app: react-app
+  ports:
+  - port: 80                               # Service listens on port 80
+    targetPort: 80                         # Forward to container port 80
+    protocol: TCP
+    name: http
+  type: ClusterIP                          # Internal only (accessed via nginx-proxy)
+
+# ==============================================================================
+# How to apply this file:
+#   kubectl apply -f step11-react-app.yaml
+#
+# How to verify:
+#   kubectl get deployment react-app -n microservices-poc
+#   kubectl get pods -l app=react-app -n microservices-poc
+#   kubectl logs -f deployment/react-app -n microservices-poc
+#
+# Test directly (before nginx-proxy):
+#   kubectl port-forward -n microservices-poc service/react-app 3000:80
+#   Open: http://localhost:3000
+#
+# Understanding the Architecture:
+# - React app is served as static files by nginx
+# - User's browser downloads HTML/JS/CSS
+# - JavaScript in browser makes API calls to backend
+# - All API calls go through nginx-proxy (next step)
+# ==============================================================================

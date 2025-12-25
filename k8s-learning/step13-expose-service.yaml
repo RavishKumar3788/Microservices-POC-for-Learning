@@ -1,0 +1,155 @@
+# ==============================================================================
+# STEP 13: EXPOSE SERVICE TO OUTSIDE WORLD
+# ==============================================================================
+# 
+# What is this?
+# - Makes your application accessible from outside the cluster
+# - Currently everything is ClusterIP (internal only)
+# - We need to expose nginx-proxy externally
+# 
+# Service Types:
+# 1. ClusterIP - Internal only (default) ✓ Used for databases
+# 2. NodePort - Exposes on each node's IP at a static port
+# 3. LoadBalancer - Creates external load balancer (cloud providers)
+# 
+# We'll use NodePort for learning (works on Docker Desktop/Minikube)
+# 
+# ==============================================================================
+
+---
+# Nginx Proxy Service (External Access via NodePort)
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-proxy-external              # New service name (separate from internal)
+  namespace: microservices-poc
+  labels:
+    app: nginx-proxy
+spec:
+  type: NodePort                           # Expose externally via node port
+  selector:
+    app: nginx-proxy                       # Route to nginx-proxy pods
+  ports:
+  - port: 80                               # Service port (internal)
+    targetPort: 80                         # Container port
+    nodePort: 30080                        # External port (30000-32767 range)
+    protocol: TCP
+    name: http
+
+# ==============================================================================
+# Alternative: LoadBalancer (for cloud environments)
+# ==============================================================================
+# If you're on a cloud provider (AWS, Azure, GCP), use this instead:
+#
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: nginx-proxy-external
+#   namespace: microservices-poc
+# spec:
+#   type: LoadBalancer                     # Creates external load balancer
+#   selector:
+#     app: nginx-proxy
+#   ports:
+#   - port: 80
+#     targetPort: 80
+#     protocol: TCP
+#     name: http
+#
+# Then get external IP with:
+#   kubectl get service nginx-proxy-external -n microservices-poc
+#   Access at: http://<EXTERNAL-IP>
+
+# ==============================================================================
+# How to apply this file:
+#   kubectl apply -f step13-expose-service.yaml
+#
+# How to verify:
+#   kubectl get service nginx-proxy-external -n microservices-poc
+#
+# Access your application:
+#
+# Docker Desktop (Windows/Mac):
+#   http://localhost:30080
+#
+# Minikube:
+#   minikube service nginx-proxy-external -n microservices-poc
+#   Or: http://<minikube-ip>:30080
+#   Get IP: minikube ip
+#
+# Cloud (with LoadBalancer):
+#   kubectl get service nginx-proxy-external -n microservices-poc
+#   Look for EXTERNAL-IP
+#   Access at: http://<EXTERNAL-IP>
+#
+# ==============================================================================
+# Understanding Service Types
+# ==============================================================================
+#
+# ClusterIP (default):
+#   - Only accessible within cluster
+#   - Used for: databases, internal services
+#   - Example: mongodb, redis, products-app
+#
+# NodePort:
+#   - Exposes service on each node's IP at a static port
+#   - Port range: 30000-32767
+#   - Used for: testing, development
+#   - Example: nginx-proxy-external:30080
+#   - Access: http://<any-node-ip>:30080
+#
+# LoadBalancer:
+#   - Creates external load balancer (cloud only)
+#   - Gets external IP automatically
+#   - Used for: production deployments
+#   - Example: nginx-proxy-external with public IP
+#   - Access: http://<external-ip>
+#
+# ==============================================================================
+# Testing Your Deployment
+# ==============================================================================
+#
+# 1. Check all pods are running:
+#    kubectl get pods -n microservices-poc
+#
+# 2. Check all services:
+#    kubectl get services -n microservices-poc
+#
+# 3. Access your application:
+#    http://localhost:30080 (or your minikube IP)
+#
+# 4. Test API endpoints:
+#    http://localhost:30080/api/products
+#    http://localhost:30080/api/users
+#    http://localhost:30080/api/orders
+#
+# 5. View Swagger documentation:
+#    http://localhost:30080/products-swagger
+#    http://localhost:30080/users-swagger
+#    http://localhost:30080/orders-swagger
+#
+# ==============================================================================
+# Congratulations!
+# ==============================================================================
+#
+# You've successfully deployed a complete microservices application to Kubernetes!
+#
+# What you've learned:
+# ✓ Namespaces - Isolating resources
+# ✓ ConfigMaps - Managing configuration
+# ✓ PersistentVolumeClaims - Persistent storage
+# ✓ Deployments - Running applications
+# ✓ Services - Networking between pods
+# ✓ Resource limits - Managing CPU/memory
+# ✓ Health checks - Liveness and readiness probes
+# ✓ Reverse proxy - API gateway pattern
+# ✓ Service exposure - Making apps accessible
+#
+# Next steps:
+# - Scale your services: kubectl scale deployment products-app --replicas=3 -n microservices-poc
+# - Update images: kubectl set image deployment/products-app products-app=ravishchauhan/products-app:v2 -n microservices-poc
+# - View logs: kubectl logs -f deployment/products-app -n microservices-poc
+# - Debug issues: kubectl describe pod <pod-name> -n microservices-poc
+#
+# ==============================================================================
