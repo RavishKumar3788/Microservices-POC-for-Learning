@@ -1,0 +1,65 @@
+# ==============================================================================
+# KUBERNETES NAMESPACE - COST-OPTIMIZED FOR LEARNING
+# ==============================================================================
+# 
+# What is a Namespace?
+# -------------------
+# A namespace is a virtual cluster within your physical Kubernetes cluster.
+# It provides logical isolation between different applications or environments.
+# 
+# Think of it as a "folder" that keeps your resources organized and separate
+# from other applications running in the same cluster.
+# 
+# Why use a separate namespace?
+# ----------------------------
+# 1. ISOLATION: Your resources won't conflict with others in the cluster
+# 2. ORGANIZATION: Easy to view all related resources together
+# 3. RESOURCE QUOTAS: Can limit CPU/memory usage per namespace
+# 4. ACCESS CONTROL: Can apply RBAC policies at namespace level
+# 5. EASY CLEANUP: Delete namespace = delete everything inside it
+# 
+# Common commands:
+# ---------------
+# View all namespaces:        kubectl get namespaces
+# Create namespace:           kubectl apply -f namespace.yaml
+# View resources in namespace: kubectl get all -n microservices-dev
+# Delete namespace:           kubectl delete namespace microservices-dev
+# 
+# ==============================================================================
+
+apiVersion: v1                    # API version - v1 is for core Kubernetes objects
+kind: Namespace                   # Type of resource we're creating
+metadata:
+  name: microservices-dev         # Name of our namespace (use this in all commands)
+  labels:
+    # Labels are key-value pairs that help organize and query resources
+    name: microservices-dev       # Redundant but helps with queries
+    environment: development      # Indicates this is a dev environment
+    cost-center: learning         # Tag for cost tracking
+    managed-by: kubectl           # How this resource is managed
+    
+# ==============================================================================
+# LEARNING NOTES:
+# 
+# Default Namespace:
+# - If you don't specify a namespace, resources go to the "default" namespace
+# - Best practice: Always use custom namespaces for your applications
+# 
+# System Namespaces:
+# - kube-system: Kubernetes system components (don't modify!)
+# - kube-public: Publicly readable resources
+# - kube-node-lease: Node heartbeat data
+# 
+# Namespace Scope:
+# - Most resources are namespaced (Pods, Services, Deployments, etc.)
+# - Some are cluster-wide (Nodes, PersistentVolumes, StorageClasses)
+# 
+# Resource Naming:
+# - Must be unique within a namespace
+# - Can have same name in different namespaces
+# - Format: <resource-name>.<namespace>.svc.cluster.local
+# 
+# Example DNS Resolution:
+# - Service "mongodb" in this namespace resolves to: mongodb.microservices-dev.svc.cluster.local
+# - Within same namespace, you can just use: mongodb
+# ==============================================================================

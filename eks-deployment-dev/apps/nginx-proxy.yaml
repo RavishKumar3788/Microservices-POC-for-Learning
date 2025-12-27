@@ -1,0 +1,351 @@
+# ==============================================================================
+# NGINX REVERSE PROXY - COST-OPTIMIZED FOR LEARNING
+# ==============================================================================
+# 
+# What is a Reverse Proxy?
+# -----------------------
+# A reverse proxy sits in front of your backend servers and forwards client
+# requests to the appropriate backend service. It's like a traffic director.
+# 
+# Why Nginx as Reverse Proxy?
+# ---------------------------
+# 1. SINGLE ENTRY POINT: One URL for all services
+# 2. ROUTING: Routes /api/products to products-app, /api/users to users-app
+# 3. LOAD BALANCING: Distributes traffic across multiple pods (if replicas > 1)
+# 4. SSL TERMINATION: Can handle HTTPS certificates
+# 5. CACHING: Can cache static responses
+# 6. COMPRESSION: Can compress responses to save bandwidth
+# 
+# User Request Flow:
+# -----------------
+# 1. User → http://load-balancer/api/products
+# 2. Load Balancer → Nginx Proxy Service
+# 3. Nginx → Products App Service
+# 4. Products App → Response
+# 5. Nginx → User (with response)
+# 
+# ==============================================================================
+
+---
+# ==============================================================================
+# CONFIGMAP - Nginx Configuration File
+# ==============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: microservices-dev
+  labels:
+    app: nginx-proxy
+    
+data:
+  nginx.conf: |
+    # ========================================================================
+    # NGINX CONFIGURATION
+    # ========================================================================
+    
+    # Event processing configuration
+    events {
+        worker_connections 1024;     # Max concurrent connections per worker
+        # 1024 is sufficient for learning (handles thousands of requests/sec)
+        # Production might use 4096 or higher
+    }
+
+    http {
+        # ====================================================================
+        # UPSTREAM BLOCKS - Define backend services
+        # ====================================================================
+        # Nginx will load-balance requests across these backends
+        
+        upstream products_backend {
+            server products-app:8080;  # Kubernetes service name:port
+            # If you had multiple replicas, you'd add more servers:
+            # server products-app-1:8080;
+            # server products-app-2:8080;
+        }
+
+        upstream users_backend {
+            server users-app:8080;
+        }
+
+        upstream orders_backend {
+            server orders-app:8080;
+        }
+
+        upstream react_frontend {
+            server react-app:80;
+        }
+
+        # ====================================================================
+        # SERVER BLOCK - Main configuration
+        # ====================================================================
+        server {
+            listen 80;               # Listen on port 80 (HTTP)
+            server_name _;           # Accept requests for any hostname
+            
+            # Logging (useful for debugging)
+            access_log /var/log/nginx/access.log;
+            error_log /var/log/nginx/error.log;
+
+            # ================================================================
+            # HEALTH CHECK ENDPOINT
+            # ================================================================
+            location /nginx-health {
+                access_log off;      # Don't log health checks
+                return 200 "healthy\n";
+                add_header Content-Type text/plain;
+            }
+            # Used by Kubernetes probes and AWS Load Balancer health checks
+
+            # ================================================================
+            # API ROUTES - Route to backend microservices
+            # ================================================================
+            
+            # Products API
+            location /api/products {
+                proxy_pass http://products_backend;
+                # Proxy headers (important for proper routing)
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                
+                # Timeouts (prevent hanging requests)
+                proxy_connect_timeout 30s;
+                proxy_send_timeout 30s;
+                proxy_read_timeout 30s;
+            }
+            # Example: /api/products/123 → http://products-app:8080/api/products/123
+
+            # Users API
+            location /api/users {
+                proxy_pass http://users_backend;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_connect_timeout 30s;
+                proxy_send_timeout 30s;
+                proxy_read_timeout 30s;
+            }
+
+            # Orders API
+            location /api/orders {
+                proxy_pass http://orders_backend;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_connect_timeout 30s;
+                proxy_send_timeout 30s;
+                proxy_read_timeout 30s;
+            }
+
+            # ================================================================
+            # DEFAULT ROUTE - React Frontend
+            # ================================================================
+            location / {
+                proxy_pass http://react_frontend;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                
+                # SPA fallback (for client-side routing)
+                proxy_intercept_errors on;
+                error_page 404 = /index.html;
+            }
+            # All non-API requests go to React app
+        }
+    }
+
+# ==============================================================================
+# NGINX PROXY HEADERS EXPLAINED
+# ==============================================================================
+# 
+# Host: Original hostname from client request
+# - Backend services need this to generate correct URLs
+# 
+# X-Real-IP: Client's actual IP address
+# - Backend services can log/use this for rate limiting
+# 
+# X-Forwarded-For: Chain of proxy IPs
+# - Shows all proxies the request passed through
+# - Format: client, proxy1, proxy2, ...
+# 
+# X-Forwarded-Proto: Original protocol (http or https)
+# - Backend knows if original request was secure
+# - Important for redirect logic and security checks
+# 
+# ==============================================================================
+
+---
+# ==============================================================================
+# DEPLOYMENT - Nginx Proxy
+# ==============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-proxy
+  namespace: microservices-dev
+  labels:
+    app: nginx-proxy
+    tier: gateway
+    environment: development
+
+spec:
+  replicas: 1                    # Single instance (sufficient for learning)
+  selector:
+    matchLabels:
+      app: nginx-proxy
+  
+  template:
+    metadata:
+      labels:
+        app: nginx-proxy
+        tier: gateway
+    
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine      # Lightweight Alpine Linux image
+        
+        ports:
+        - containerPort: 80
+          name: http
+        
+        # Mount configuration file
+        volumeMounts:
+        - name: nginx-config     # Name must match volume below
+          mountPath: /etc/nginx/nginx.conf  # Where Nginx reads config
+          subPath: nginx.conf    # Which key from ConfigMap to use
+        
+        # MINIMAL RESOURCES (Nginx is very efficient)
+        resources:
+          requests:
+            memory: "32Mi"       # Nginx uses very little memory
+            cpu: "50m"           # 0.05 CPU cores
+          limits:
+            memory: "64Mi"
+            cpu: "100m"
+        # Nginx can handle thousands of requests/sec with these resources!
+        
+        livenessProbe:
+          httpGet:
+            path: /nginx-health
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /nginx-health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+      
+      # Volumes - Link ConfigMap to container
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config     # ConfigMap name from above
+
+---
+# ==============================================================================
+# SERVICE - Nginx Proxy Endpoint
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-proxy
+  namespace: microservices-dev
+  labels:
+    app: nginx-proxy
+
+spec:
+  selector:
+    app: nginx-proxy
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  type: ClusterIP              # Internal service (accessed via Ingress)
+
+# ==============================================================================
+# REQUEST FLOW EXAMPLE
+# ==============================================================================
+# 
+# User requests: GET http://load-balancer/api/products
+# 
+# 1. AWS Load Balancer receives request
+# 2. Routes to Ingress (configured in ingress.yaml)
+# 3. Ingress forwards to nginx-proxy Service (port 80)
+# 4. Service routes to nginx-proxy Pod (port 80)
+# 5. Nginx reads location /api/products rule
+# 6. Proxies to products_backend (products-app:8080)
+# 7. Products Service routes to Products Pod
+# 8. Products App processes request
+# 9. Response flows back through same path
+# 10. User receives JSON response
+# 
+# ==============================================================================
+
+# ==============================================================================
+# USEFUL COMMANDS
+# ==============================================================================
+# 
+# 1. Deploy Nginx:
+#    kubectl apply -f nginx-proxy.yaml
+# 
+# 2. Check logs:
+#    kubectl logs -f deployment/nginx-proxy -n microservices-dev
+# 
+# 3. Test configuration:
+#    kubectl exec deployment/nginx-proxy -n microservices-dev -- nginx -t
+# 
+# 4. Reload configuration (after ConfigMap update):
+#    kubectl exec deployment/nginx-proxy -n microservices-dev -- nginx -s reload
+#    # Or restart pod:
+#    kubectl rollout restart deployment/nginx-proxy -n microservices-dev
+# 
+# 5. View access logs:
+#    kubectl logs deployment/nginx-proxy -n microservices-dev | grep "GET"
+# 
+# 6. Port forward for local testing:
+#    kubectl port-forward svc/nginx-proxy 8080:80 -n microservices-dev
+#    # Then access: http://localhost:8080
+# 
+# 7. Check Nginx status:
+#    curl http://<pod-ip>/nginx-health
+# 
+# ==============================================================================
+
+# ==============================================================================
+# TROUBLESHOOTING
+# ==============================================================================
+# 
+# 502 Bad Gateway:
+# - Backend service is down or not ready
+# - Check: kubectl get pods -n microservices-dev
+# - Solution: Ensure all backend pods are Running and Ready
+# 
+# 504 Gateway Timeout:
+# - Backend taking too long to respond
+# - Check backend logs for slow queries
+# - Solution: Increase proxy_read_timeout or optimize backend
+# 
+# Configuration errors:
+# - Check syntax: kubectl exec deployment/nginx-proxy -- nginx -t
+# - View logs: kubectl logs deployment/nginx-proxy -n microservices-dev
+# 
+# Cannot reach services:
+# - Verify service names match upstream blocks
+# - Check: kubectl get svc -n microservices-dev
+# - Verify DNS: kubectl exec deployment/nginx-proxy -- nslookup products-app
+# 
+# ==============================================================================

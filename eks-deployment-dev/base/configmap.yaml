@@ -1,0 +1,234 @@
+# ==============================================================================
+# CONFIGMAP - APPLICATION CONFIGURATION (Cost-Optimized)
+# ==============================================================================
+# 
+# What is a ConfigMap?
+# -------------------
+# A ConfigMap is a Kubernetes object that stores non-sensitive configuration
+# data as key-value pairs. It decouples configuration from container images,
+# making applications more portable and easier to manage.
+# 
+# Why use ConfigMaps?
+# ------------------
+# 1. SEPARATION OF CONCERNS: Keep config separate from code
+# 2. ENVIRONMENT-SPECIFIC: Different configs for dev/staging/prod
+# 3. NO REBUILD: Change config without rebuilding Docker images
+# 4. CENTRALIZED: Single source of truth for configuration
+# 5. REUSABLE: Multiple pods can use the same ConfigMap
+# 
+# ConfigMap vs Secrets:
+# --------------------
+# - ConfigMap: Non-sensitive data (URLs, database names, feature flags)
+# - Secret: Sensitive data (passwords, API keys, certificates)
+# - Both work similarly, but Secrets are base64 encoded and can be encrypted
+# 
+# How to use ConfigMap data in pods:
+# ---------------------------------
+# 1. Environment Variables: Inject as env vars (we use this method)
+# 2. Command-line Arguments: Pass as args to container command
+# 3. Volume Files: Mount as files in a directory
+# 
+# ==============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config                # Name to reference in deployments
+  namespace: microservices-dev
+  labels:
+    app: microservices
+    environment: development
+    
+  annotations:
+    description: "Application configuration for all microservices"
+    last-updated: "2025-12-26"
+
+# ==============================================================================
+# DATA SECTION - Key-Value pairs
+# ==============================================================================
+data:
+  # --------------------------------------------------------------------------
+  # DATABASE CONNECTION STRINGS
+  # --------------------------------------------------------------------------
+  
+  # MongoDB Connection String
+  # Format: mongodb://[username:password@]host[:port][/database][?options]
+  MONGODB_CONNECTION_STRING: "mongodb://mongodb:27017"
+  # Breakdown:
+  # - mongodb://        : Protocol
+  # - mongodb           : Service name (Kubernetes DNS resolves this)
+  # - 27017             : Default MongoDB port
+  # 
+  # Why no password? For learning/dev, we skip auth to simplify setup.
+  # Production MUST use authentication! Format: mongodb://user:pass@mongodb:27017
+  
+  # MongoDB Database Name
+  MONGODB_DATABASE: "microservices"
+  # All collections will be created under this database
+  # Collections: products, users, orders (created automatically by apps)
+  
+  # --------------------------------------------------------------------------
+  # REDIS CONNECTION STRING
+  # --------------------------------------------------------------------------
+  
+  # Redis Connection String
+  REDIS_CONNECTION_STRING: "redis:6379"
+  # Format: host:port
+  # - redis    : Service name (Kubernetes DNS resolves to redis.microservices-dev.svc.cluster.local)
+  # - 6379     : Default Redis port
+  # 
+  # Redis is used for:
+  # - Caching frequently accessed data (products, users)
+  # - Session storage
+  # - Rate limiting
+  # - Distributed locks
+  
+  # --------------------------------------------------------------------------
+  # SERVICE-TO-SERVICE COMMUNICATION URLs
+  # --------------------------------------------------------------------------
+  # These URLs allow microservices to call each other
+  
+  # Products Service URL
+  PRODUCTS_SERVICE_URL: "http://products-app:8080"
+  # Used by Orders service to fetch product details
+  # Format: http://service-name:port
+  
+  # Users Service URL
+  USERS_SERVICE_URL: "http://users-app:8080"
+  # Used by Orders service to validate users
+  
+  # Orders Service URL
+  ORDERS_SERVICE_URL: "http://orders-app:8080"
+  # May be used by other services to query orders
+  
+  # --------------------------------------------------------------------------
+  # ASP.NET CORE CONFIGURATION
+  # --------------------------------------------------------------------------
+  
+  # Environment Name
+  ASPNETCORE_ENVIRONMENT: "Production"
+  # Values: Development, Staging, Production
+  # - Development: Detailed error pages, no caching, verbose logging
+  # - Production: Generic error pages, caching enabled, minimal logging
+  # 
+  # Using Production mode in EKS with proper service DNS names in appsettings.json
+  
+  # Application URLs (ports to listen on)
+  ASPNETCORE_URLS: "http://+:8080"
+  # Format: protocol://interface:port
+  # - http://          : Use HTTP (HTTPS requires certificates)
+  # - +                : Listen on all network interfaces (0.0.0.0)
+  # - 8080             : Port number (matches containerPort in deployments)
+  
+  # --------------------------------------------------------------------------
+  # LOGGING CONFIGURATION
+  # --------------------------------------------------------------------------
+  
+  # Log Level
+  LOG_LEVEL: "Information"
+  # Levels (from least to most verbose):
+  # - Critical: Only catastrophic failures
+  # - Error: Error events
+  # - Warning: Warning events  
+  # - Information: Informational messages (default for dev)
+  # - Debug: Detailed debugging info
+  # - Trace: Most detailed information
+  
+  # --------------------------------------------------------------------------
+  # COST OPTIMIZATION NOTES
+  # --------------------------------------------------------------------------
+  # 
+  # What we removed for cost savings:
+  # ✗ Elasticsearch: Saves ~$15-20/month (use kubectl logs instead)
+  # ✗ Application Insights: Saves ~$5-10/month (use native logs)
+  # ✗ External monitoring: Use built-in Kubernetes monitoring
+  # 
+  # What we kept:
+  # ✓ MongoDB: Essential for data persistence
+  # ✓ Redis: Essential for caching and performance
+  # ✓ Service mesh: Essential for microservices communication
+  # 
+  # --------------------------------------------------------------------------
+
+# ==============================================================================
+# HOW THESE VALUES ARE USED IN DEPLOYMENTS
+# ==============================================================================
+# 
+# In deployment YAML files, you'll see:
+# 
+# env:
+# - name: MONGODB_CONNECTION_STRING
+#   valueFrom:
+#     configMapKeyRef:
+#       name: app-config              # This ConfigMap
+#       key: MONGODB_CONNECTION_STRING # This key
+# 
+# This injects the value into the container as an environment variable.
+# The application code reads: Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING")
+# 
+# ==============================================================================
+
+# ==============================================================================
+# USEFUL COMMANDS
+# ==============================================================================
+# 
+# 1. Create/Update ConfigMap:
+#    kubectl apply -f configmap.yaml
+# 
+# 2. View ConfigMap:
+#    kubectl get configmap app-config -n microservices-dev
+# 
+# 3. View ConfigMap details:
+#    kubectl describe configmap app-config -n microservices-dev
+# 
+# 4. View ConfigMap data:
+#    kubectl get configmap app-config -n microservices-dev -o yaml
+# 
+# 5. Edit ConfigMap directly (not recommended):
+#    kubectl edit configmap app-config -n microservices-dev
+# 
+# 6. Delete ConfigMap:
+#    kubectl delete configmap app-config -n microservices-dev
+# 
+# ==============================================================================
+
+# ==============================================================================
+# UPDATING CONFIGURATION
+# ==============================================================================
+# 
+# When you update a ConfigMap:
+# 1. Edit this file
+# 2. Apply changes: kubectl apply -f configmap.yaml
+# 3. Restart pods to pick up new values:
+#    kubectl rollout restart deployment/products-app -n microservices-dev
+#    kubectl rollout restart deployment/users-app -n microservices-dev
+#    kubectl rollout restart deployment/orders-app -n microservices-dev
+# 
+# Why restart? ConfigMap values are loaded at pod startup, not continuously.
+# 
+# Alternative: Use volume-mounted ConfigMaps (auto-updates, but more complex)
+# 
+# ==============================================================================
+
+# ==============================================================================
+# KUBERNETES DNS EXPLAINED
+# ==============================================================================
+# 
+# Service DNS Format:
+# <service-name>.<namespace>.svc.cluster.local
+# 
+# Examples:
+# - Full: mongodb.microservices-dev.svc.cluster.local
+# - Within same namespace: mongodb (Kubernetes adds the rest automatically)
+# - Cross-namespace: mongodb.other-namespace.svc.cluster.local
+# 
+# How it works:
+# 1. Container tries to connect to "mongodb"
+# 2. DNS query goes to Kubernetes DNS (CoreDNS)
+# 3. CoreDNS resolves to Service ClusterIP
+# 4. Service load-balances to one of the pod IPs
+# 5. Connection established to the pod
+# 
+# This is why we use service names instead of IPs in connection strings!
+# 
+# ==============================================================================

@@ -1,0 +1,381 @@
+# ==============================================================================
+# MONGODB DATABASE - COST-OPTIMIZED FOR LEARNING
+# ==============================================================================
+# 
+# What is MongoDB?
+# ---------------
+# MongoDB is a NoSQL document database that stores data in flexible, JSON-like
+# documents. Unlike SQL databases with tables and rows, MongoDB uses collections
+# and documents.
+# 
+# Why MongoDB for Microservices?
+# ------------------------------
+# 1. FLEXIBLE SCHEMA: Each document can have different fields (perfect for evolving APIs)
+# 2. JSON-NATIVE: Stores data as JSON/BSON (matches REST API format)
+# 3. HORIZONTAL SCALING: Easy to scale across multiple servers
+# 4. DEVELOPER-FRIENDLY: Intuitive query language
+# 5. HIGH PERFORMANCE: Fast reads and writes for document data
+# 
+# ==============================================================================
+
+---
+# ==============================================================================
+# DEPLOYMENT - Manages MongoDB Pods
+# ==============================================================================
+apiVersion: apps/v1              # API version for Deployment resource
+kind: Deployment                 # Type of resource
+metadata:
+  name: mongodb                  # Deployment name (used in commands)
+  namespace: microservices-dev
+  labels:
+    app: mongodb                 # Label for selecting this deployment
+    tier: database               # Tier in application architecture
+    environment: development
+    
+  annotations:
+    description: "MongoDB database for microservices data storage"
+    # Annotations provide additional metadata (not used for selection)
+
+spec:
+  # --------------------------------------------------------------------------
+  # REPLICA CONFIGURATION
+  # --------------------------------------------------------------------------
+  replicas: 1                    # Run ONLY 1 pod (cost optimization!)
+  # Why 1 replica?
+  # - Saves compute resources (no redundant pods)
+  # - Saves money (~$30-40/month per replica)
+  # - Sufficient for learning and testing
+  # 
+  # Production would use 3+ replicas for:
+  # - High availability (if one pod dies, others keep running)
+  # - Load distribution
+  # - Zero-downtime updates
+  
+  # --------------------------------------------------------------------------
+  # SELECTOR - How to find pods managed by this deployment
+  # --------------------------------------------------------------------------
+  selector:
+    matchLabels:
+      app: mongodb               # Must match pod labels below
+  
+  # --------------------------------------------------------------------------
+  # POD TEMPLATE - Blueprint for creating pods
+  # --------------------------------------------------------------------------
+  template:
+    metadata:
+      labels:
+        app: mongodb             # Labels applied to each pod
+        tier: database
+        environment: development
+    
+    spec:
+      # ----------------------------------------------------------------------
+      # CONTAINER SPECIFICATION
+      # ----------------------------------------------------------------------
+      containers:
+      - name: mongodb            # Container name within the pod
+        
+        # ------------------------------------------------------------------
+        # DOCKER IMAGE
+        # ------------------------------------------------------------------
+        image: mongo:7.0         # Official MongoDB image version 7.0
+        # Why version 7.0?
+        # - Stable release
+        # - Good performance
+        # - Compatible with most drivers
+        # - Regular security updates
+        
+        imagePullPolicy: IfNotPresent
+        # Image pull policies:
+        # - Always: Pull image every time (slower, but always up-to-date)
+        # - IfNotPresent: Use cached image if available (faster, saves bandwidth)
+        # - Never: Only use local image (fails if not cached)
+        
+        # ------------------------------------------------------------------
+        # PORTS
+        # ------------------------------------------------------------------
+        ports:
+        - containerPort: 27017   # MongoDB default port
+          name: mongodb          # Port name (useful for service references)
+          protocol: TCP
+        # Container listens on this port inside the pod
+        # Service will route traffic to this port
+        
+        # ------------------------------------------------------------------
+        # VOLUME MOUNTS
+        # ------------------------------------------------------------------
+        volumeMounts:
+        - name: mongodb-storage  # Must match volume name below
+          mountPath: /data/db    # WHERE to mount inside container
+          # /data/db is MongoDB's default data directory
+          # All database files are stored here
+          # Without this, data would be lost when pod restarts!
+        
+        # ------------------------------------------------------------------
+        # ENVIRONMENT VARIABLES
+        # ------------------------------------------------------------------
+        env:
+        - name: MONGO_INITDB_DATABASE
+          value: "microservices" # Initial database created on first start
+          # Collections will be created under this database:
+          # - microservices.products
+          # - microservices.users
+          # - microservices.orders
+        
+        # For production, you'd also set:
+        # - MONGO_INITDB_ROOT_USERNAME
+        # - MONGO_INITDB_ROOT_PASSWORD
+        # We skip auth for learning simplicity
+        
+        # ------------------------------------------------------------------
+        # RESOURCE LIMITS - COST OPTIMIZED!
+        # ------------------------------------------------------------------
+        resources:
+          requests:              # Minimum guaranteed resources
+            memory: "256Mi"      # 256 megabytes RAM (minimal for MongoDB)
+            cpu: "200m"          # 0.2 CPU cores (200 millicores)
+            # "requests" ensure pod can be scheduled on a node
+            
+          limits:                # Maximum allowed resources
+            memory: "512Mi"      # 512 MB max (prevent memory leaks from crashing node)
+            cpu: "500m"          # 0.5 CPU cores max
+            # "limits" prevent one pod from consuming all node resources
+        
+        # Resource Comparison:
+        # Dev (this file):  256Mi/200m to 512Mi/500m  ← Cost-optimized
+        # Production:       1Gi/500m to 4Gi/2000m     ← High performance
+        
+        # Why these values?
+        # - MongoDB can run with 256 MB for small datasets
+        # - 0.2 CPU sufficient for low traffic
+        # - Saves ~70% on compute costs vs production config
+        
+        # ------------------------------------------------------------------
+        # LIVENESS PROBE - Is the container healthy?
+        # ------------------------------------------------------------------
+        livenessProbe:
+          # Liveness probe checks if container is running properly
+          # If check fails repeatedly, Kubernetes RESTARTS the container
+          
+          exec:
+            command:
+            - mongosh            # MongoDB shell command
+            - --eval             # Execute this command
+            - "db.adminCommand('ping')"  # Ping database
+            # Returns { ok: 1 } if MongoDB is responding
+          
+          initialDelaySeconds: 30  # Wait 30s after start before first check
+          # Why wait? MongoDB needs time to start up
+          
+          periodSeconds: 15      # Check every 15 seconds
+          timeoutSeconds: 5      # Timeout if no response in 5 seconds
+          failureThreshold: 3    # Restart after 3 consecutive failures
+          # 3 failures × 15s intervals = 45s of downtime before restart
+        
+        # ------------------------------------------------------------------
+        # READINESS PROBE - Is the container ready to serve traffic?
+        # ------------------------------------------------------------------
+        readinessProbe:
+          # Readiness probe checks if container is ready to accept requests
+          # If check fails, pod is REMOVED from service endpoints (no traffic)
+          # Unlike liveness, pod is NOT restarted
+          
+          exec:
+            command:
+            - mongosh
+            - --eval
+            - "db.adminCommand('ping')"
+          
+          initialDelaySeconds: 10  # Start checking after 10 seconds
+          periodSeconds: 10        # Check every 10 seconds
+          timeoutSeconds: 3        # 3 second timeout
+          failureThreshold: 3      # Mark as not ready after 3 failures
+        
+        # Difference between Liveness and Readiness:
+        # - Liveness: Is it alive? If not, restart it
+        # - Readiness: Is it ready for traffic? If not, don't send requests
+        
+      # ----------------------------------------------------------------------
+      # VOLUMES - Storage attached to the pod
+      # ----------------------------------------------------------------------
+      volumes:
+      - name: mongodb-storage    # Volume name (referenced in volumeMounts)
+        persistentVolumeClaim:
+          claimName: mongodb-pvc # PVC created in storage.yaml
+          # This links the pod to the EBS volume
+          # Data persists even if pod is deleted/recreated
+
+# ==============================================================================
+# DEPLOYMENT VS STATEFULSET
+# ==============================================================================
+# 
+# We use Deployment here, but MongoDB production often uses StatefulSet. Why?
+# 
+# Deployment (what we use):
+# - Good for stateless apps
+# - Pods are interchangeable
+# - Simpler to understand
+# - Fine for single replica
+# 
+# StatefulSet (production alternative):
+# - Good for stateful apps (databases)
+# - Pods have stable identities (mongodb-0, mongodb-1)
+# - Ordered deployment and scaling
+# - Each pod can have its own storage
+# - Required for MongoDB replica sets
+# 
+# For learning with 1 replica, Deployment is simpler and sufficient.
+# ==============================================================================
+
+---
+# ==============================================================================
+# SERVICE - Network endpoint for MongoDB
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb                  # DNS name used by other services
+  namespace: microservices-dev
+  labels:
+    app: mongodb
+    tier: database
+    
+  annotations:
+    description: "MongoDB service endpoint - used by microservices to connect to database"
+
+spec:
+  # --------------------------------------------------------------------------
+  # SERVICE TYPE
+  # --------------------------------------------------------------------------
+  type: ClusterIP                # Internal service only
+  # Service types:
+  # - ClusterIP: Only accessible within cluster (DEFAULT, what we use)
+  # - NodePort: Accessible from outside via node IP:port
+  # - LoadBalancer: Creates external load balancer (costs money!)
+  # - ExternalName: Maps to external DNS name
+  # 
+  # Why ClusterIP?
+  # - MongoDB should NOT be accessible from internet (security!)
+  # - Only microservices inside cluster need access
+  # - No cost for load balancer
+  
+  # --------------------------------------------------------------------------
+  # SELECTOR - Which pods receive traffic
+  # --------------------------------------------------------------------------
+  selector:
+    app: mongodb                 # Routes traffic to pods with this label
+  # Service acts as a load balancer across all matching pods
+  # In our case, only 1 pod, so no load balancing needed
+  
+  # --------------------------------------------------------------------------
+  # PORTS
+  # --------------------------------------------------------------------------
+  ports:
+  - port: 27017                  # Port the SERVICE listens on
+    targetPort: 27017            # Port on the POD to forward to
+    protocol: TCP
+    name: mongodb
+  
+  # Port mapping explained:
+  # 1. Microservice connects to: mongodb:27017
+  # 2. Kubernetes DNS resolves "mongodb" to Service ClusterIP
+  # 3. Service receives connection on port 27017
+  # 4. Service forwards to pod's targetPort 27017
+  # 5. MongoDB container receives connection
+
+# ==============================================================================
+# HOW OTHER SERVICES CONNECT
+# ==============================================================================
+# 
+# Connection string used by microservices:
+# mongodb://mongodb:27017/microservices
+# 
+# Breakdown:
+# - mongodb://     : MongoDB protocol
+# - mongodb        : Service name (resolved by Kubernetes DNS)
+# - 27017          : Service port
+# - /microservices : Database name
+# 
+# Behind the scenes:
+# 1. App resolves "mongodb" to Service IP (e.g., 10.100.200.50)
+# 2. Connection sent to 10.100.200.50:27017
+# 3. Service forwards to Pod IP (e.g., 10.244.1.5:27017)
+# 4. MongoDB container handles the request
+# 
+# Why use Service instead of Pod IP directly?
+# - Pod IPs change when pods restart
+# - Service IP is stable
+# - Service provides load balancing (if multiple replicas)
+# - Service provides health checking (only routes to ready pods)
+# ==============================================================================
+
+# ==============================================================================
+# USEFUL COMMANDS
+# ==============================================================================
+# 
+# 1. Deploy MongoDB:
+#    kubectl apply -f mongodb.yaml
+# 
+# 2. Check deployment status:
+#    kubectl get deployment mongodb -n microservices-dev
+#    kubectl rollout status deployment/mongodb -n microservices-dev
+# 
+# 3. Check pods:
+#    kubectl get pods -l app=mongodb -n microservices-dev
+# 
+# 4. Check service:
+#    kubectl get svc mongodb -n microservices-dev
+# 
+# 5. View logs:
+#    kubectl logs -f deployment/mongodb -n microservices-dev
+# 
+# 6. Connect to MongoDB shell:
+#    kubectl exec -it deployment/mongodb -n microservices-dev -- mongosh
+#    
+#    Then try commands:
+#    > show dbs
+#    > use microservices
+#    > show collections
+#    > db.products.find()
+# 
+# 7. Describe pod for details:
+#    kubectl describe pod <pod-name> -n microservices-dev
+# 
+# 8. Port forward to local machine:
+#    kubectl port-forward svc/mongodb 27017:27017 -n microservices-dev
+#    # Now connect from your machine: mongodb://localhost:27017
+# 
+# 9. Restart deployment:
+#    kubectl rollout restart deployment/mongodb -n microservices-dev
+# 
+# 10. Scale replicas (if needed):
+#     kubectl scale deployment mongodb --replicas=2 -n microservices-dev
+# 
+# ==============================================================================
+
+# ==============================================================================
+# TROUBLESHOOTING
+# ==============================================================================
+# 
+# Pod stuck in Pending:
+# - Check: kubectl describe pod <pod-name> -n microservices-dev
+# - Reason: Probably insufficient resources or PVC not bound
+# - Solution: Check node resources, verify EBS CSI driver is running
+# 
+# Pod crashing (CrashLoopBackOff):
+# - Check logs: kubectl logs <pod-name> -n microservices-dev
+# - Common causes: Permission issues, out of memory, corrupted data
+# - Solution: Check resource limits, verify volume permissions
+# 
+# Cannot connect from microservices:
+# - Check service: kubectl get svc mongodb -n microservices-dev
+# - Check endpoints: kubectl get endpoints mongodb -n microservices-dev
+# - Verify connection string in ConfigMap
+# - Check if pod is ready: kubectl get pods -n microservices-dev
+# 
+# Database is slow:
+# - Increase resource limits in this file
+# - Check if hitting memory limit: kubectl top pod -n microservices-dev
+# - Consider adding indexes to MongoDB collections
+# 
+# ==============================================================================

@@ -1,0 +1,359 @@
+# ==============================================================================
+# AWS APPLICATION LOAD BALANCER INGRESS - COST-OPTIMIZED FOR LEARNING
+# ==============================================================================
+# 
+# What is an Ingress?
+# ------------------
+# An Ingress is a Kubernetes resource that manages external access to services
+# in a cluster. It provides HTTP/HTTPS routing from outside the cluster to
+# services inside the cluster.
+# 
+# What is AWS Application Load Balancer (ALB)?
+# --------------------------------------------
+# ALB is a Layer 7 (HTTP/HTTPS) load balancer provided by AWS. It:
+# - Distributes incoming traffic across multiple targets
+# - Performs health checks
+# - Supports path-based routing (/api/products, /api/users)
+# - Supports SSL/TLS termination
+# - Integrates with AWS services (ACM, WAF, CloudWatch)
+# 
+# How it works:
+# ------------
+# 1. You create this Ingress resource in Kubernetes
+# 2. AWS Load Balancer Controller watches for Ingress resources
+# 3. Controller creates an ALB in AWS automatically
+# 4. ALB gets a public DNS name (e.g., k8s-xxx.elb.amazonaws.com)
+# 5. Users access your application via the ALB URL
+# 6. ALB routes traffic to your services based on rules
+# 
+# Architecture:
+# ------------
+# Internet → ALB → Nginx Proxy → Backend Services (Products/Users/Orders/React)
+# 
+# Cost Optimization for Learning:
+# ------------------------------
+# - ALB costs ~$16/month + $0.008 per LCU-hour
+# - For a few hours: ~$0.10-0.20 per session
+# - Alternative: NodePort (free but less production-like)
+# - Delete ALB immediately after learning to minimize cost
+# 
+# ==============================================================================
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: microservices-ingress
+  namespace: microservices-dev
+  labels:
+    app: microservices
+    environment: development
+  
+  # ==========================================================================
+  # ANNOTATIONS - Configure AWS Load Balancer
+  # ==========================================================================
+  annotations:
+    # --------------------------------------------------------------------
+    # BASIC CONFIGURATION
+    # --------------------------------------------------------------------
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    # Options:
+    # - internet-facing: Accessible from public internet (we use this)
+    # - internal: Only accessible within VPC
+    
+    alb.ingress.kubernetes.io/target-type: ip
+    # Options:
+    # - ip: Route directly to pod IPs (recommended for EKS)
+    # - instance: Route to EC2 instance (node) IPs
+    # 
+    # Why IP mode?
+    # - More efficient (bypasses NodePort)
+    # - Better for pod networking
+    # - Required for Fargate
+    
+    alb.ingress.kubernetes.io/load-balancer-name: microservices-dev-alb
+    # Custom name for your ALB (easier to find in AWS Console)
+    
+    # --------------------------------------------------------------------
+    # HEALTH CHECK CONFIGURATION
+    # --------------------------------------------------------------------
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    # Protocol for health checks (HTTP or HTTPS)
+    
+    alb.ingress.kubernetes.io/healthcheck-path: /nginx-health
+    # Path to check (must return 200 OK)
+    # This is the health endpoint we configured in Nginx
+    
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '15'
+    # How often to perform health checks
+    # More frequent = faster failure detection, more costs
+    
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+    # Max time to wait for health check response
+    
+    alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+    # Consecutive successful checks before marking healthy
+    
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
+    # Consecutive failed checks before marking unhealthy
+    
+    # Health check math:
+    # - Interval: 15 seconds
+    # - Unhealthy threshold: 2
+    # - Time to mark unhealthy: 30 seconds (15 × 2)
+    # - Downtime before removal: ~30-45 seconds
+    
+    # --------------------------------------------------------------------
+    # SSL/TLS CONFIGURATION (Optional - for production)
+    # --------------------------------------------------------------------
+    # Uncomment these when you have an SSL certificate in AWS ACM:
+    
+    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-south-1:123456789:certificate/xxx
+    # # ARN of your SSL certificate from AWS Certificate Manager
+    # 
+    # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    # # Listen on both HTTP (80) and HTTPS (443)
+    # 
+    # alb.ingress.kubernetes.io/ssl-redirect: '443'
+    # # Automatically redirect HTTP to HTTPS
+    
+    # For learning, we skip SSL to save setup time
+    # You can access via HTTP: http://alb-url
+    
+    # --------------------------------------------------------------------
+    # COST OPTIMIZATION
+    # --------------------------------------------------------------------
+    alb.ingress.kubernetes.io/target-group-attributes: deregistration_delay.timeout_seconds=30
+    # Deregister targets faster when pods are deleted (default is 300 seconds)
+    # Speeds up deployments and reduces connection errors during updates
+    
+    # --------------------------------------------------------------------
+    # AWS RESOURCE TAGGING
+    # --------------------------------------------------------------------
+    alb.ingress.kubernetes.io/tags: Environment=development,Project=microservices-poc,ManagedBy=kubernetes
+    # Tags help with:
+    # - Cost tracking (see costs by project)
+    # - Resource organization
+    # - Access control policies
+    # You'll see these tags in AWS Console
+
+spec:
+  ingressClassName: alb         # Use AWS Load Balancer Controller
+  # This replaces the deprecated kubernetes.io/ingress.class annotation
+  
+  # ==========================================================================
+  # ROUTING RULES
+  # ==========================================================================
+  rules:
+  - http:                        # HTTP routing (no hostname restriction)
+      paths:
+      - path: /                  # Match ALL paths
+        pathType: Prefix         # Match /anything, /api/products, etc.
+        backend:
+          service:
+            name: nginx-proxy    # Route to Nginx proxy service
+            port:
+              number: 80         # Service port
+  
+  # How routing works:
+  # 1. ALB receives request (any path)
+  # 2. Checks if path matches "/" (yes, it matches everything)
+  # 3. Routes to nginx-proxy:80
+  # 4. Nginx proxy inspects path and routes to appropriate backend
+  #    - /api/products → products-app
+  #    - /api/users → users-app
+  #    - / → react-app
+  
+  # Alternative (direct routing without Nginx):
+  # You could define multiple paths here:
+  # - path: /api/products → products-app
+  # - path: /api/users → users-app
+  # - path: / → react-app
+  # 
+  # We use Nginx for more flexibility and features
+
+# ==============================================================================
+# INGRESS VS SERVICE TYPES
+# ==============================================================================
+# 
+# Three ways to expose services:
+# 
+# 1. ClusterIP (default):
+#    - Internal only
+#    - Not accessible from outside
+#    - Free
+#    - Use for: Databases, internal services
+# 
+# 2. NodePort:
+#    - Accessible via Node IP:Port
+#    - Port range: 30000-32767
+#    - Free
+#    - Use for: Quick testing, development
+#    - Example: http://node-ip:31234
+# 
+# 3. LoadBalancer:
+#    - Creates cloud load balancer (AWS ALB/NLB)
+#    - Gets public IP/DNS
+#    - Costs money (~$16-20/month)
+#    - Use for: Production applications
+#    - Example: http://k8s-xxx.elb.amazonaws.com
+# 
+# 4. Ingress (what we use):
+#    - Uses LoadBalancer internally
+#    - Adds advanced routing (path-based, host-based)
+#    - One load balancer for multiple services
+#    - SSL termination
+#    - Better for production
+# 
+# ==============================================================================
+
+# ==============================================================================
+# AFTER APPLYING THIS FILE
+# ==============================================================================
+# 
+# What happens:
+# 1. Kubernetes creates Ingress resource
+# 2. AWS Load Balancer Controller detects it (usually within 30 seconds)
+# 3. Controller calls AWS APIs to create:
+#    - Application Load Balancer
+#    - Target Groups (links ALB to pods)
+#    - Security Groups (allows HTTP traffic)
+#    - Listener Rules (routing configuration)
+# 4. ALB provisions (takes 2-3 minutes)
+# 5. ALB gets a DNS name
+# 6. You can access your application!
+# 
+# Timeline:
+# - 0:00: kubectl apply -f ingress.yaml
+# - 0:30: Ingress resource created, controller starts work
+# - 3:00: ALB fully provisioned and healthy
+# - 3:30: Application accessible via ALB URL
+# 
+# ==============================================================================
+
+# ==============================================================================
+# USEFUL COMMANDS
+# ==============================================================================
+# 
+# 1. Create Ingress:
+#    kubectl apply -f ingress.yaml
+# 
+# 2. Check Ingress status:
+#    kubectl get ingress -n microservices-dev
+#    
+#    Example output:
+#    NAME                    CLASS   HOSTS   ADDRESS                         PORTS   AGE
+#    microservices-ingress   <none>  *       k8s-xxx.ap-south-1.elb.amazonaws.com  80    5m
+# 
+# 3. Get Load Balancer URL:
+#    kubectl get ingress microservices-ingress -n microservices-dev \
+#      -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+# 
+# 4. Describe Ingress (see events):
+#    kubectl describe ingress microservices-ingress -n microservices-dev
+# 
+# 5. Check AWS Load Balancer Controller logs:
+#    kubectl logs -n kube-system deployment/aws-load-balancer-controller
+# 
+# 6. View Ingress YAML:
+#    kubectl get ingress microservices-ingress -n microservices-dev -o yaml
+# 
+# 7. Test application:
+#    # Get the URL
+#    ALB_URL=$(kubectl get ingress microservices-ingress -n microservices-dev \
+#      -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+#    
+#    # Test endpoints
+#    curl http://$ALB_URL/nginx-health           # Should return "healthy"
+#    curl http://$ALB_URL/api/products           # Products API
+#    curl http://$ALB_URL/                       # React app (returns HTML)
+# 
+# 8. Delete Ingress (removes ALB):
+#    kubectl delete ingress microservices-ingress -n microservices-dev
+#    # Wait 2-3 minutes for ALB to be fully deleted from AWS
+# 
+# ==============================================================================
+
+# ==============================================================================
+# TROUBLESHOOTING
+# ==============================================================================
+# 
+# ALB not created:
+# - Check controller: kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller
+# - Check logs: kubectl logs -n kube-system deployment/aws-load-balancer-controller
+# - Verify IAM permissions for controller service account
+# 
+# 502 Bad Gateway:
+# - Pods not ready: kubectl get pods -n microservices-dev
+# - Service misconfigured: kubectl get svc nginx-proxy -n microservices-dev
+# - Security groups blocking traffic
+# 
+# 503 Service Unavailable:
+# - No healthy targets
+# - Check health checks in AWS Console (EC2 > Target Groups)
+# - Verify /nginx-health endpoint works: kubectl exec deployment/nginx-proxy -- curl localhost/nginx-health
+# 
+# Cannot access ALB URL:
+# - DNS not propagated yet (wait 2-3 minutes)
+# - Security groups blocking port 80
+# - Check ALB exists: AWS Console > EC2 > Load Balancers
+# 
+# Slow to provision:
+# - Normal! ALB takes 2-3 minutes
+# - Watch events: kubectl describe ingress microservices-ingress -n microservices-dev
+# - Check controller logs for errors
+# 
+# ==============================================================================
+
+# ==============================================================================
+# AWS CONSOLE - WHERE TO FIND RESOURCES
+# ==============================================================================
+# 
+# After creating this Ingress, you can view in AWS Console:
+# 
+# 1. Load Balancers:
+#    EC2 > Load Balancers > microservices-dev-alb
+#    - See DNS name, listeners, rules
+#    - Monitoring metrics (requests, latency, errors)
+# 
+# 2. Target Groups:
+#    EC2 > Target Groups
+#    - See registered targets (pod IPs)
+#    - Health check configuration
+#    - Target health status
+# 
+# 3. Security Groups:
+#    EC2 > Security Groups
+#    - Automatically created for ALB
+#    - Allows inbound HTTP (port 80)
+# 
+# 4. CloudWatch:
+#    CloudWatch > Metrics > ApplicationELB
+#    - Request count
+#    - Latency
+#    - 5xx/4xx errors
+# 
+# ==============================================================================
+
+# ==============================================================================
+# COST BREAKDOWN (AWS ap-south-1)
+# ==============================================================================
+# 
+# ALB Costs:
+# - Fixed: $0.0225/hour = $16.20/month (pro-rated)
+# - LCU: $0.008/hour per LCU (Load Balancer Capacity Unit)
+# 
+# For learning (few hours):
+# - Fixed: $0.0225 × 2 hours = $0.045
+# - LCU: ~$0.016 (minimal traffic)
+# - Total: ~$0.06 for 2 hours
+# 
+# Data Transfer:
+# - Inbound: Free
+# - Outbound: $0.09/GB (first 10 GB free per month)
+# - For learning: Usually free
+# 
+# IMPORTANT: Delete the Ingress after learning to stop charges!
+# kubectl delete ingress microservices-ingress -n microservices-dev
+# 
+# ==============================================================================

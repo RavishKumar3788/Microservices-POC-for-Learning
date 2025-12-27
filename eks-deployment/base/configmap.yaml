@@ -1,0 +1,31 @@
+# ==============================================================================
+# CONFIGMAPS FOR APPLICATION CONFIGURATION
+# ==============================================================================
+# Stores non-sensitive configuration data
+# ==============================================================================
+
+---
+# Application Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: microservices-poc
+data:
+  # Database Connection Strings
+  MONGODB_CONNECTION_STRING: "mongodb://mongodb:27017"
+  MONGODB_DATABASE: "microservices"
+  
+  # Redis Configuration
+  REDIS_CONNECTION_STRING: "redis:6379"
+  
+  # Elasticsearch Configuration
+  ELASTICSEARCH_URL: "http://elasticsearch:9200"
+  
+  # Application URLs
+  PRODUCTS_SERVICE_URL: "http://products-app:8080"
+  USERS_SERVICE_URL: "http://users-app:8080"
+  ORDERS_SERVICE_URL: "http://orders-app:8080"
+  
+  # ASP.NET Core Configuration
+  ASPNETCORE_ENVIRONMENT: "Production"

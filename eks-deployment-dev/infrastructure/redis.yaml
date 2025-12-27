@@ -1,0 +1,426 @@
+# ==============================================================================
+# REDIS CACHE - COST-OPTIMIZED FOR LEARNING
+# ==============================================================================
+# 
+# What is Redis?
+# -------------
+# Redis is an in-memory data structure store used as a database, cache, and
+# message broker. It's extremely fast because data is stored in RAM.
+# 
+# Why Redis in Microservices?
+# ---------------------------
+# 1. CACHING: Store frequently accessed data (products, user profiles)
+#    - Reduces database load
+#    - Improves response time (milliseconds vs seconds)
+#    - Example: Cache product details to avoid querying MongoDB repeatedly
+# 
+# 2. SESSION STORAGE: Store user sessions across multiple app instances
+#    - User logs in once, session shared across all pods
+#    - Survives pod restarts
+# 
+# 3. RATE LIMITING: Track API request counts
+#    - Prevent abuse (e.g., max 100 requests per minute per user)
+#    - Use INCR command to count requests
+# 
+# 4. DISTRIBUTED LOCKS: Coordinate between microservices
+#    - Ensure only one instance processes a job
+#    - Use SETNX (set if not exists) for locking
+# 
+# 5. PUB/SUB: Real-time messaging between services
+#    - Publish events, subscribe to notifications
+#    - Example: Order created → notify inventory service
+# 
+# ==============================================================================
+
+---
+# ==============================================================================
+# DEPLOYMENT - Manages Redis Pods
+# ==============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: microservices-dev
+  labels:
+    app: redis
+    tier: cache
+    environment: development
+    
+  annotations:
+    description: "Redis cache for improving application performance"
+
+spec:
+  # --------------------------------------------------------------------------
+  # REPLICA CONFIGURATION
+  # --------------------------------------------------------------------------
+  replicas: 1                    # Single instance (cost optimization)
+  # Why 1 replica?
+  # - Sufficient for learning and low traffic
+  # - Saves ~$25-30/month per replica
+  # - Cache can handle thousands of requests per second
+  # 
+  # Production typically uses:
+  # - 3+ replicas for high availability
+  # - Redis Sentinel or Redis Cluster for automatic failover
+  
+  selector:
+    matchLabels:
+      app: redis
+  
+  # --------------------------------------------------------------------------
+  # POD TEMPLATE
+  # --------------------------------------------------------------------------
+  template:
+    metadata:
+      labels:
+        app: redis
+        tier: cache
+        environment: development
+    
+    spec:
+      containers:
+      - name: redis
+        
+        # ------------------------------------------------------------------
+        # DOCKER IMAGE
+        # ------------------------------------------------------------------
+        image: redis:7-alpine    # Redis 7 on Alpine Linux (smallest image)
+        # Why Alpine?
+        # - 30-40 MB vs 100+ MB for standard image
+        # - Faster to pull and deploy
+        # - Same Redis functionality
+        # - Lower storage costs
+        
+        imagePullPolicy: IfNotPresent
+        
+        # ------------------------------------------------------------------
+        # PORTS
+        # ------------------------------------------------------------------
+        ports:
+        - containerPort: 6379    # Redis default port
+          name: redis
+          protocol: TCP
+        
+        # ------------------------------------------------------------------
+        # VOLUME MOUNTS
+        # ------------------------------------------------------------------
+        volumeMounts:
+        - name: redis-storage    # Persistent storage
+          mountPath: /data       # Redis data directory
+        # Redis is in-memory, but we persist to disk for:
+        # - Snapshots (RDB files)
+        # - Append-only files (AOF) for durability
+        # - Survives pod restarts
+        
+        # ------------------------------------------------------------------
+        # REDIS CONFIGURATION via Command
+        # ------------------------------------------------------------------
+        command:
+        - redis-server           # Start Redis server
+        - --appendonly           # Enable append-only file (AOF)
+        - "yes"
+        # AOF logs every write command to disk
+        # On restart, Redis replays the log to rebuild data
+        # Trade-off: Slightly slower writes, but better durability
+        
+        - --maxmemory            # Maximum memory to use
+        - "200mb"
+        # Limits Redis memory usage (protects node from OOM)
+        # Redis is in-memory, so this is the actual data capacity
+        # 200 MB can hold ~1-5 million small key-value pairs
+        
+        - --maxmemory-policy     # What to do when max memory reached
+        - "allkeys-lru"
+        # Eviction policies:
+        # - noeviction: Return errors when full (default)
+        # - allkeys-lru: Remove least recently used keys (BEST for cache)
+        # - allkeys-lfu: Remove least frequently used keys
+        # - volatile-lru: Remove LRU from keys with TTL only
+        # - volatile-ttl: Remove keys with shortest TTL
+        # 
+        # We use allkeys-lru because:
+        # - Automatically makes room for new data
+        # - Keeps most accessed data in memory
+        # - Perfect for caching use case
+        
+        # ------------------------------------------------------------------
+        # RESOURCE LIMITS - COST OPTIMIZED!
+        # ------------------------------------------------------------------
+        resources:
+          requests:
+            memory: "128Mi"      # Minimum 128 MB RAM
+            cpu: "100m"          # 0.1 CPU cores
+          limits:
+            memory: "256Mi"      # Maximum 256 MB RAM
+            cpu: "250m"          # 0.25 CPU cores max
+        
+        # Why these values?
+        # - Redis is very efficient (can handle thousands of ops/sec with 0.1 CPU)
+        # - 256 MB limit aligns with 200 MB maxmemory (+ overhead)
+        # - Saves ~80% vs production config
+        
+        # Memory breakdown:
+        # - 200 MB: Redis data (configured via --maxmemory)
+        # - 56 MB: Redis overhead (connections, buffers, metadata)
+        # - 256 MB: Total limit
+        
+        # ------------------------------------------------------------------
+        # LIVENESS PROBE - Is Redis responding?
+        # ------------------------------------------------------------------
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli          # Redis command-line interface
+            - ping               # Ping command
+          # Expected response: PONG
+          # If Redis doesn't respond, pod is restarted
+          
+          initialDelaySeconds: 20  # Wait 20s for Redis to start
+          periodSeconds: 10        # Check every 10 seconds
+          timeoutSeconds: 5        # Timeout after 5 seconds
+          failureThreshold: 3      # Restart after 3 failures
+        
+        # ------------------------------------------------------------------
+        # READINESS PROBE - Is Redis ready for traffic?
+        # ------------------------------------------------------------------
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          
+          initialDelaySeconds: 5   # Redis starts quickly
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        
+      # ----------------------------------------------------------------------
+      # VOLUMES
+      # ----------------------------------------------------------------------
+      volumes:
+      - name: redis-storage
+        persistentVolumeClaim:
+          claimName: redis-pvc   # 1 GB EBS volume from storage.yaml
+
+# ==============================================================================
+# REDIS PERSISTENCE EXPLAINED
+# ==============================================================================
+# 
+# Redis offers two persistence modes:
+# 
+# 1. RDB (Redis Database Backup):
+#    - Point-in-time snapshots
+#    - Saved to dump.rdb file
+#    - Compact and fast to load
+#    - May lose data between snapshots
+# 
+# 2. AOF (Append-Only File):
+#    - Logs every write operation
+#    - More durable (we use this)
+#    - Larger file size
+#    - Can be compacted with BGREWRITEAOF
+# 
+# We use AOF because:
+# - Better for learning (see how Redis works)
+# - Better durability (important for session/cache data)
+# - Automatic compaction keeps file small
+# 
+# ==============================================================================
+
+---
+# ==============================================================================
+# SERVICE - Network endpoint for Redis
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis                    # DNS name: redis.microservices-dev.svc.cluster.local
+  namespace: microservices-dev
+  labels:
+    app: redis
+    tier: cache
+    
+  annotations:
+    description: "Redis service endpoint for caching"
+
+spec:
+  type: ClusterIP                # Internal only (secure!)
+  # Redis should NEVER be exposed to internet!
+  # No authentication in this config (learning simplicity)
+  # Production MUST use requirepass and TLS
+  
+  selector:
+    app: redis                   # Route to Redis pods
+  
+  ports:
+  - port: 6379                   # Service port
+    targetPort: 6379             # Pod port
+    protocol: TCP
+    name: redis
+
+# ==============================================================================
+# HOW MICROSERVICES USE REDIS
+# ==============================================================================
+# 
+# Connection string: redis:6379
+# 
+# Example use cases:
+# 
+# 1. CACHING PRODUCTS:
+#    // Check cache first
+#    var product = await cache.GetAsync($"product:{id}");
+#    if (product == null) {
+#        // Cache miss - query database
+#        product = await db.Products.FindAsync(id);
+#        // Store in cache for 5 minutes
+#        await cache.SetAsync($"product:{id}", product, TimeSpan.FromMinutes(5));
+#    }
+#    return product;
+# 
+# 2. RATE LIMITING:
+#    var key = $"ratelimit:{userId}:{minute}";
+#    var count = await redis.IncrAsync(key);  // Increment counter
+#    await redis.ExpireAsync(key, 60);        // Expire after 60 seconds
+#    if (count > 100) {
+#        return StatusCode(429, "Too many requests");
+#    }
+# 
+# 3. SESSION STORAGE:
+#    // Store session
+#    await redis.SetAsync($"session:{sessionId}", userData, TimeSpan.FromHours(24));
+#    // Retrieve session
+#    var userData = await redis.GetAsync($"session:{sessionId}");
+# 
+# 4. DISTRIBUTED LOCK:
+#    var lockKey = $"lock:order:{orderId}";
+#    var acquired = await redis.SetAsync(lockKey, "locked", TimeSpan.FromSeconds(30), 
+#                                         When.NotExists);
+#    if (acquired) {
+#        // Process order (guaranteed no other instance is processing)
+#        ProcessOrder(orderId);
+#        await redis.DeleteAsync(lockKey);  // Release lock
+#    }
+# 
+# ==============================================================================
+
+# ==============================================================================
+# USEFUL COMMANDS
+# ==============================================================================
+# 
+# 1. Deploy Redis:
+#    kubectl apply -f redis.yaml
+# 
+# 2. Check status:
+#    kubectl get deployment redis -n microservices-dev
+#    kubectl get pods -l app=redis -n microservices-dev
+# 
+# 3. View logs:
+#    kubectl logs -f deployment/redis -n microservices-dev
+# 
+# 4. Connect to Redis CLI:
+#    kubectl exec -it deployment/redis -n microservices-dev -- redis-cli
+#    
+#    Try these commands:
+#    > PING                           # Should return PONG
+#    > SET mykey "Hello Redis"        # Store a key
+#    > GET mykey                      # Retrieve a key
+#    > KEYS *                         # List all keys
+#    > INFO memory                    # Memory usage stats
+#    > INFO stats                     # Statistics
+#    > DBSIZE                         # Number of keys
+#    > MONITOR                        # Watch all commands in real-time
+#    > TTL mykey                      # Time to live (expiration)
+#    > DEL mykey                      # Delete a key
+# 
+# 5. Check memory usage:
+#    kubectl exec deployment/redis -n microservices-dev -- redis-cli INFO memory
+# 
+# 6. Monitor Redis operations:
+#    kubectl exec deployment/redis -n microservices-dev -- redis-cli MONITOR
+#    # Shows all commands being executed in real-time
+# 
+# 7. Port forward to local machine:
+#    kubectl port-forward svc/redis 6379:6379 -n microservices-dev
+#    # Connect from your machine: redis-cli -h localhost -p 6379
+# 
+# 8. Flush all data (careful!):
+#    kubectl exec deployment/redis -n microservices-dev -- redis-cli FLUSHALL
+# 
+# ==============================================================================
+
+# ==============================================================================
+# MONITORING REDIS
+# ==============================================================================
+# 
+# Key metrics to watch:
+# 
+# 1. Memory Usage:
+#    redis-cli INFO memory | grep used_memory_human
+#    - Should stay below maxmemory (200 MB)
+#    - If approaching limit, LRU eviction kicks in
+# 
+# 2. Hit Rate:
+#    redis-cli INFO stats | grep keyspace_hits
+#    redis-cli INFO stats | grep keyspace_misses
+#    - Hit rate = hits / (hits + misses)
+#    - Good cache: 80%+ hit rate
+#    - Low hit rate: Review what you're caching
+# 
+# 3. Connected Clients:
+#    redis-cli INFO clients | grep connected_clients
+#    - Number of active connections
+#    - Each microservice pod creates connections
+# 
+# 4. Operations per Second:
+#    redis-cli INFO stats | grep instantaneous_ops_per_sec
+#    - Shows current load
+# 
+# ==============================================================================
+
+# ==============================================================================
+# TROUBLESHOOTING
+# ==============================================================================
+# 
+# Redis using too much memory:
+# - Check: kubectl exec deployment/redis -n microservices-dev -- redis-cli INFO memory
+# - Solution: Increase maxmemory limit or review cached data
+# - Tip: Use TTL on all cached data to auto-expire
+# 
+# Cache misses too high:
+# - Check cache hit rate (see monitoring section)
+# - Solution: Increase TTL, cache more data, or warm up cache
+# 
+# Slow performance:
+# - Check: kubectl top pod -l app=redis -n microservices-dev
+# - Solution: Increase CPU limits if hitting threshold
+# - Tip: Redis is single-threaded, benefits from higher CPU clock speed
+# 
+# Data lost after restart:
+# - Check: kubectl logs deployment/redis -n microservices-dev
+# - Verify: AOF file exists (kubectl exec deployment/redis -- ls -lh /data)
+# - Solution: Ensure PVC is properly bound
+# 
+# Cannot connect from microservices:
+# - Check service: kubectl get svc redis -n microservices-dev
+# - Check endpoints: kubectl get endpoints redis -n microservices-dev
+# - Verify connection string in ConfigMap
+# 
+# ==============================================================================
+
+# ==============================================================================
+# COST OPTIMIZATION NOTES
+# ==============================================================================
+# 
+# Current configuration cost: ~$0.05/day (~$1.50/month)
+# - 0.1 CPU × $0.0416/hour = ~$3/month
+# - But shared with other pods on same node
+# - Actual cost is portion of node cost
+# 
+# Savings vs production:
+# - Memory: 256 MB vs 2 GB (87% reduction)
+# - CPU: 0.1 cores vs 1 core (90% reduction)
+# - No Redis Cluster (saves 2+ additional nodes)
+# - Total savings: ~$50-100/month
+# 
+# For a few hours of learning: essentially free!
+# ==============================================================================

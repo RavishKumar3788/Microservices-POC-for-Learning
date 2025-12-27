@@ -159,3 +159,7 @@ kubectl get pods -n microservices-poc
 Write-Host ""
 Write-Host "Happy Learning!" -ForegroundColor Green
 Write-Host ""
+
+# Step 13: Expose Service
+Write-Host "[Step 13/13] Running your app..." -ForegroundColor Green
+minikube service nginx-proxy -n microservices-poc

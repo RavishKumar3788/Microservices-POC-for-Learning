@@ -1,0 +1,14 @@
+# ==============================================================================
+# NAMESPACE FOR EKS DEPLOYMENT
+# ==============================================================================
+# Creates an isolated namespace for the microservices application
+# ==============================================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: microservices-poc
+  labels:
+    name: microservices-poc
+    environment: production
+    managed-by: eks

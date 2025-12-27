@@ -1,0 +1,104 @@
+# ==============================================================================
+# REACT FRONTEND APPLICATION - COST-OPTIMIZED FOR LEARNING
+# ==============================================================================
+# 
+# This is your React Single Page Application (SPA) - the user interface.
+# Built with React + TypeScript, served by Nginx.
+# Communicates with backend APIs through the Nginx proxy.
+# 
+# ==============================================================================
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-app
+  namespace: microservices-dev
+  labels:
+    app: react-app
+    tier: frontend
+    environment: development
+
+spec:
+  replicas: 1                    # Single instance
+  selector:
+    matchLabels:
+      app: react-app
+  
+  template:
+    metadata:
+      labels:
+        app: react-app
+        tier: frontend
+    
+    spec:
+      containers:
+      - name: react-app
+        image: ravishchauhan/react-app:latest
+        imagePullPolicy: Always
+        
+        ports:
+        - containerPort: 80      # Nginx serves on port 80
+          name: http
+        
+        # MINIMAL RESOURCES (frontend is lightweight)
+        resources:
+          requests:
+            memory: "64Mi"       # React build is static files
+            cpu: "50m"           # Nginx is very efficient
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        
+        livenessProbe:
+          httpGet:
+            path: /              # Check if Nginx is serving
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: react-app
+  namespace: microservices-dev
+  labels:
+    app: react-app
+
+spec:
+  selector:
+    app: react-app
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  type: ClusterIP
+
+# ==============================================================================
+# FRONTEND FEATURES:
+# - Product catalog browsing
+# - User management dashboard
+# - Order creation and tracking
+# - Real-time updates
+# - Responsive design (mobile-friendly)
+# 
+# ROUTING:
+# Users access the application through AWS Load Balancer:
+# http://<load-balancer-url>/ → React App (this service)
+# http://<load-balancer-url>/api/products → Products API (via Nginx proxy)
+# http://<load-balancer-url>/api/users → Users API (via Nginx proxy)
+# http://<load-balancer-url>/api/orders → Orders API (via Nginx proxy)
+# ==============================================================================
