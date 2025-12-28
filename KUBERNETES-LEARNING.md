@@ -151,7 +151,7 @@ k8s-learning/
    - ravishchauhan/products-app:latest
    - ravishchauhan/users-app:latest
    - ravishchauhan/orders-app:latest
-   - ravishchauhan/react-app:latest
+   - ravishchauhan/react-app:01
 
 ## ⚡ Quick Commands
 

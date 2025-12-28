@@ -34,7 +34,7 @@ spec:
     spec:
       containers:
       - name: react-app
-        image: ravishchauhan/react-app:latest
+        image: ravishchauhan/react-app:01
         imagePullPolicy: Always
         
         ports:

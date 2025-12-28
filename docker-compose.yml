@@ -15,7 +15,7 @@ services:
     restart: unless-stopped
 
   react-app:
-    image: ravishchauhan/react-app:latest
+    image: ravishchauhan/react-app:01
     build:
       context: ./my-app
       dockerfile: Dockerfile

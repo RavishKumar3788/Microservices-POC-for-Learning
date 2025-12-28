@@ -51,7 +51,7 @@ Your Docker images are already pushed to Docker Hub:
 - ✅ ravishchauhan/products-app:latest
 - ✅ ravishchauhan/users-app:latest
 - ✅ ravishchauhan/orders-app:latest
-- ✅ ravishchauhan/react-app:latest
+- ✅ ravishchauhan/react-app:01
 
 ## 🏃 Quick Start (5 minutes)
 
