@@ -10,7 +10,7 @@
 # Why do we need it?
 # - Users access ONE URL (e.g., http://localhost:8080)
 # - Nginx routes /api/products → products-app
-# - Nginx routes /api/users → user-app
+# - Nginx routes /api/users → users-app
 # - Nginx routes / → react-app
 # 
 # Benefits:
@@ -120,7 +120,7 @@ spec:
 # 3. Nginx checks the URL path:
 #    - / → forwards to react-app:80
 #    - /api/products → forwards to products-app:8080/api/products
-#    - /api/users → forwards to user-app:8080/api/users
+#    - /api/users → forwards to users-app:8080/api/users
 #    - /api/orders → forwards to orders-app:8080/api/orders
 # 4. Backend service processes request
 # 5. Response flows back through nginx to user

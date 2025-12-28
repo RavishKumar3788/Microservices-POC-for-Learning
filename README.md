@@ -8,7 +8,7 @@ A comprehensive proof-of-concept repository demonstrating a complete microservic
 - **React Frontend** - Modern SPA with TypeScript and Tailwind CSS
 - **Products Service** - .NET 8 API with full CRUD operations
 - **Users Service** - .NET 8 API with authentication patterns
-- **Orders Service** - .NET 8 API with order management
+- **Orders Service** - .NET 10 API with order management. Used Server sent events to display the real time data on the dashboard.
 - **Nginx Proxy** - Reverse proxy and API gateway
 
 ### **Infrastructure & Tools**

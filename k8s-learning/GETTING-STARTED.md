@@ -49,7 +49,7 @@ kubectl version --client
 
 Your Docker images are already pushed to Docker Hub:
 - ✅ ravishchauhan/products-app:latest
-- ✅ ravishchauhan/user-app:latest
+- ✅ ravishchauhan/users-app:latest
 - ✅ ravishchauhan/orders-app:latest
 - ✅ ravishchauhan/react-app:latest
 

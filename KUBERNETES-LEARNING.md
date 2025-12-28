@@ -149,7 +149,7 @@ k8s-learning/
 
 3. **Docker images** pushed to Docker Hub ✅
    - ravishchauhan/products-app:latest
-   - ravishchauhan/user-app:latest
+   - ravishchauhan/users-app:latest
    - ravishchauhan/orders-app:latest
    - ravishchauhan/react-app:latest
 

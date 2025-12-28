@@ -74,7 +74,6 @@ const streamOrders = (
     eventSource.onmessage = (event) => {
         try {
             const orders = JSON.parse(event.data);
-            console.log('Received orders:', orders);
             onOrdersReceived(orders);
         } catch (error) {
             console.error('Error parsing orders:', error);

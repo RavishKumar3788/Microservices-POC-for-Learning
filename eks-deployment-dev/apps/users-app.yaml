@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
       - name: users-app
-        image: ravishchauhan/user-app:latest
+        image: ravishchauhan/users-app:latest
         imagePullPolicy: Always
         
         ports:

@@ -49,7 +49,7 @@ data:
         }
 
         upstream users_api {
-            server user-app:8080;         # Users API on port 8080
+            server users-app:8080;         # Users API on port 8080
         }
 
         upstream orders_api {

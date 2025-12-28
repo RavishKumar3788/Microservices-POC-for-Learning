@@ -68,7 +68,7 @@ kubectl port-forward -n microservices-poc service/redis 6379:6379
 kubectl scale deployment products-app --replicas=3 -n microservices-poc
 
 # Scale multiple deployments
-kubectl scale deployment products-app user-app orders-app --replicas=3 -n microservices-poc
+kubectl scale deployment products-app users-app orders-app --replicas=3 -n microservices-poc
 
 # View current replica count
 kubectl get deployment products-app -n microservices-poc

@@ -14,25 +14,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: user-app                           # Name: user-app (matches your docker-compose)
+  name: users-app                           # Name: users-app (matches your docker-compose)
   namespace: microservices-poc
   labels:
-    app: user-app
+    app: users-app
     tier: backend
 spec:
   replicas: 2                              # 2 instances for reliability
   selector:
     matchLabels:
-      app: user-app
+      app: users-app
   template:
     metadata:
       labels:
-        app: user-app
+        app: users-app
         tier: backend
     spec:
       containers:
-      - name: user-app
-        image: ravishchauhan/user-app:latest
+      - name: users-app
+        image: ravishchauhan/users-app:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -69,13 +69,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: user-app                           # Service name
+  name: users-app                           # Service name
   namespace: microservices-poc
   labels:
-    app: user-app
+    app: users-app
 spec:
   selector:
-    app: user-app
+    app: users-app
   ports:
   - port: 8080
     targetPort: 8080
@@ -88,11 +88,11 @@ spec:
 #   kubectl apply -f step9-users-app.yaml
 #
 # How to verify:
-#   kubectl get deployment user-app -n microservices-poc
-#   kubectl get pods -l app=user-app -n microservices-poc
-#   kubectl logs -f deployment/user-app -n microservices-poc
+#   kubectl get deployment users-app -n microservices-poc
+#   kubectl get pods -l app=users-app -n microservices-poc
+#   kubectl logs -f deployment/users-app -n microservices-poc
 #
 # Test the service:
-#   kubectl port-forward -n microservices-poc service/user-app 8081:8080
+#   kubectl port-forward -n microservices-poc service/users-app 8081:8080
 #   curl http://localhost:8081/health
 # ==============================================================================

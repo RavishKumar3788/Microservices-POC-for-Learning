@@ -9,7 +9,7 @@ services:
     depends_on:
       - react-app
       - products-app
-      - user-app
+      - users-app
     networks:
       - common-net
     restart: unless-stopped
@@ -43,12 +43,12 @@ services:
     networks:
       - common-net
 
-  user-app:
-    image: ravishchauhan/user-app:latest
+  users-app:
+    image: ravishchauhan/users-app:latest
     build:
       context: ./Users
       dockerfile: Dockerfile
-    container_name: user-app
+    container_name: users-app
     # No ports exposed externally - accessed through nginx-proxy
     restart: unless-stopped
     environment:
