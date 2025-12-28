@@ -387,7 +387,8 @@ cd eks-deployment-dev
 eksctl delete nodegroup `
   --cluster=microservices-learning `
   --name=dev-nodes `
-  --region=ap-south-1
+  --region=ap-south-1 `
+  --drain=false
 
 # 3. Delete cluster
 eksctl delete cluster `
