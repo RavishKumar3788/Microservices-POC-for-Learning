@@ -53,8 +53,29 @@ A comprehensive proof-of-concept repository demonstrating a complete microservic
 ├── docker-compose.yml        # Complete local stack
 ├── nginx.conf                # Nginx configuration
 ├── logstash.conf            # Logstash pipeline
+├── App-Images/               # Application screenshots and visuals
 └── KUBERNETES-LEARNING.md   # K8s learning guide
 ```
+
+## 📸 Application Screenshots
+
+The [App-Images](App-Images/) folder contains screenshots of the running application, showing the user interface and various features:
+
+![Screenshot 1](App-Images/2025-12-28%2007%2020%2016.png)
+![Screenshot 2](App-Images/2025-12-28%2007%2020%2038.png)
+![Screenshot 3](App-Images/2025-12-28%2007%2020%2053.png)
+![Screenshot 4](App-Images/2025-12-28%2007%2021%2012.png)
+![Screenshot 5](App-Images/2025-12-28%2007%2021%2057.png)
+![Screenshot 6](App-Images/2025-12-28%2007%2023%2014.png)
+![Screenshot 7](App-Images/2025-12-28%2007%2023%2029.png)
+![Screenshot 8](App-Images/2025-12-28%2007%2023%2046.png)
+![Screenshot 9](App-Images/2025-12-28%2007%2025%2020.png)
+![Screenshot 10](App-Images/2025-12-28%2007%2025%2042.png)
+![Screenshot 11](App-Images/2025-12-28%2007%2025%2059.png)
+![Screenshot 12](App-Images/2025-12-28%2007%2026%2028.png)
+![Screenshot 13](App-Images/2025-12-28%2007%2026%2044.png)
+![Screenshot 14](App-Images/2025-12-28%2007%2027%2014.png)
+![Screenshot 15](App-Images/2025-12-28%2007%2027%2044.png)
 
 ## 🚦 Quick Start Options
 
@@ -169,22 +190,22 @@ dotnet run --project Orders
                              │
         ┌────────────────────┼────────────────────┐
         │                    │                    │
-    ┌───▼────┐         ┌─────▼─────┐      ┌──────▼─────┐
+    ┌───▼────┐         ┌─────▼─────┐      ┌───────▼────┐
     │Products│         │   Users   │      │   Orders   │
     │  API   │         │    API    │      │    API     │
     │ .NET 8 │         │  .NET 8   │      │  .NET 8    │
-    └───┬────┘         └─────┬─────┘      └──────┬─────┘
+    └───┬────┘         └─────┬─────┘      └───────┬────┘
         │                    │                    │
         └────────────────────┼────────────────────┘
                              │
         ┌────────────────────┼────────────────────┬──────────┐
         │                    │                    │          │
-    ┌───▼────┐         ┌─────▼─────┐      ┌──────▼─────┐   │
-    │MongoDB │         │   Redis   │      │ RabbitMQ   │   │
-    │        │         │  (Cache)  │      │ (Message)  │   │
-    └────────┘         └───────────┘      └────────────┘   │
-                                                            │
-                                                     ┌──────▼──────┐
+    ┌───▼────┐         ┌─────▼─────┐      ┌───────▼────┐     │
+    │MongoDB │         │   Redis   │      │ RabbitMQ   │     │
+    │        │         │  (Cache)  │      │ (Message)  │     │
+    └────────┘         └───────────┘      └────────────┘     │
+                                                             │
+                                                     ┌───────▼─────┐
                                                      │ ELK Stack   │
                                                      │ (Logs)      │
                                                      └─────────────┘
@@ -196,6 +217,7 @@ dotnet run --project Orders
 - **React 18** with TypeScript
 - **Tailwind CSS** for styling
 - **Axios** for HTTP requests
+- **MUI** for rich controls experience
 - Create React App tooling
 
 ### Backend Services
