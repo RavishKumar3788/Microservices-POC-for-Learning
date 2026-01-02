@@ -22,11 +22,7 @@
 # 4. PVC binds to PV
 # 5. Pod mounts the PVC as a volume
 # 
-# Cost Optimization for Learning:
-# ------------------------------
-# ✓ Using gp3 (cheapest general-purpose SSD on AWS)
-# ✓ Minimal storage sizes (just enough for learning)
-# ✓ Single availability zone (no cross-AZ data transfer costs)
+# Single availability zone (no cross-AZ data transfer)
 # ✓ No snapshots or backups configured
 # 
 # ==============================================================================
@@ -49,15 +45,12 @@ volumeBindingMode: WaitForFirstConsumer
 # ^^^ This delays volume creation until a pod using it is scheduled
 # Benefits: 1) Volume created in same AZ as pod (lower latency)
 #          2) No unused volumes created
-#          3) Better cost optimization
 
 parameters:
   type: gp3                       # General Purpose SSD (3rd generation)
-  # gp3 is cheaper and faster than gp2
-  # Cost: ~$0.08/GB-month (vs gp2 at $0.10/GB-month)
+  # gp3 is faster than gp2
   
   encrypted: "true"               # Encrypt data at rest (AWS best practice)
-  # No additional cost for encryption with EBS
   
   fsType: ext4                    # File system type (standard Linux filesystem)
   # ext4 is reliable and well-supported
@@ -74,13 +67,6 @@ allowVolumeExpansion: true        # Allow resizing volumes without recreating
 reclaimPolicy: Delete             # Delete EBS volume when PVC is deleted
 # Options: Delete (cleanup), Retain (keep for data recovery)
 # For learning: Delete to avoid orphaned volumes
-
-# ==============================================================================
-# COST BREAKDOWN - gp3 Storage:
-# 2 GB:  $0.16/month
-# 5 GB:  $0.40/month
-# Total: $0.56/month (negligible for learning!)
-# ==============================================================================
 
 ---
 # ==============================================================================
@@ -168,11 +154,10 @@ spec:
 # ==============================================================================
 # WHY NO ELASTICSEARCH?
 # 
-# For learning purposes, we're skipping Elasticsearch to save costs:
+# For learning purposes, we're skipping Elasticsearch:
 # - Elasticsearch requires ~1 GB RAM minimum (increases cluster size)
 # - Logs can be viewed with: kubectl logs <pod-name>
 # - For production, Elasticsearch provides powerful log aggregation
-# - Cost saving: ~$15-20/month by skipping it
 # 
 # You can always view logs directly:
 # kubectl logs -f deployment/products-app -n microservices-dev

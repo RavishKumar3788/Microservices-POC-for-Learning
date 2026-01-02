@@ -1,8 +1,8 @@
-# Microservices on AWS EKS - Cost-Optimized for Learning
+# Microservices on AWS EKS
 
-**Perfect for short-term learning sessions (2-4 hours)**
+**Perfect for learning sessions**
 
-This deployment is specifically designed for learning Kubernetes and microservices on AWS EKS with minimal costs. All manifest files include extensive inline documentation to help you understand what each component does.
+This deployment is specifically designed for learning Kubernetes and microservices on AWS EKS. All manifest files include extensive inline documentation to help you understand what each component does.
 
 ## 📋 What's Included
 
@@ -16,31 +16,12 @@ This deployment is specifically designed for learning Kubernetes and microservic
 ### **Infrastructure Services**
 - **MongoDB** - Document database (2 GB storage)
 - **Redis** - Cache layer (1 GB storage)
-- ✗ **Elasticsearch** - Skipped to save costs (use `kubectl logs` instead)
+- ✗ **Elasticsearch** - Skipped for simplicity (use `kubectl logs` instead)
 
 ### **AWS Resources**
 - Application Load Balancer (ALB) - Internet access
 - EBS Volumes - Persistent storage (3 GB total)
 - All running on your EKS cluster
-
-## 💰 Cost Breakdown
-
-**Estimated costs for learning session (2-4 hours):**
-
-| Resource | Configuration | Cost per Hour | 4-Hour Session |
-|----------|--------------|---------------|----------------|
-| EKS Cluster | Control Plane | $0.10 | $0.40 |
-| EC2 Nodes | 2× t3.small | $0.04 | $0.16 |
-| Load Balancer | ALB | $0.02 | $0.08 |
-| EBS Storage | 3 GB gp3 | $0.0001 | $0.0004 |
-| **Total** | | **~$0.16/hour** | **~$0.64** |
-
-**💡 Cost Savings vs. Production:**
-- **85%+ reduction** in resource requirements
-- **90%+ reduction** in storage costs
-- No Elasticsearch (saves ~$15/month)
-- Single replicas (saves compute costs)
-- Minimal resource limits
 
 ## ✅ Prerequisites
 
@@ -65,7 +46,7 @@ aws sts get-caller-identity
 
 ## 🚀 Quick Start (30 minutes)
 
-### Step 1: Create Cost-Optimized EKS Cluster
+### Step 1: Create EKS Cluster
 
 ```powershell
 # Create minimal cluster for learning
@@ -83,7 +64,6 @@ eksctl create cluster `
 **Configuration Details:**
 - **Instance Type:** t3.small (2 vCPU, 2 GB RAM) - Smallest for microservices
 - **Node Count:** 2 nodes (sufficient for all services)
-- **Cost:** ~$0.04/hour total
 - **Deployment Time:** 15-20 minutes
 
 ### Step 2: Install AWS Load Balancer Controller
@@ -210,7 +190,6 @@ Every YAML file includes extensive comments explaining:
 - **Why it's configured that way**
 - **How it works in Kubernetes**
 - **How it integrates with other services**
-- **Cost optimization choices**
 
 Start reading from:
 1. [base/namespace.yaml](base/namespace.yaml) - Understanding namespaces
@@ -403,7 +382,7 @@ eksctl delete cluster `
   - EC2 > Volumes (should be deleted)
   - EKS > Clusters (should be deleted after full cleanup)
 
-## 📊 Resource Limits (Cost Optimized)
+## 📊 Resource Limits
 
 | Service | CPU Request | CPU Limit | Memory Request | Memory Limit |
 |---------|-------------|-----------|----------------|--------------|
@@ -479,18 +458,18 @@ eks-deployment-dev/
 ## ❓ FAQ
 
 **Q: Why no Elasticsearch?**  
-A: Elasticsearch requires significant resources (~1 GB RAM minimum). For learning, use `kubectl logs` instead. Saves ~$15-20/month.
+A: Elasticsearch requires significant resources (~1 GB RAM minimum). For learning, use `kubectl logs` instead.
 
-**Q: Can I run this for longer than 4 hours?**  
-A: Yes, but costs accumulate. For extended learning, consider stopping the cluster overnight and restarting when needed.
+**Q: Can I run this for longer periods?**  
+A: Yes. For extended learning, consider stopping the cluster when not in use and restarting when needed.
 
 **Q: Why single replicas?**  
-A: High availability isn't needed for learning. Single replicas save compute costs significantly.
+A: High availability isn't needed for learning. Single replicas simplify the setup.
 
 **Q: Can I increase resources if needed?**  
 A: Yes! Edit the YAML files and increase `requests` and `limits`, then apply changes with `kubectl apply -f <file>`.
 
-**Q: How do I save money?**  
+**Q: How do I cleanup after learning?**  
 A: Delete everything after each session with `.\cleanup.ps1` and delete the cluster. Recreate when you need it again.
 
 ---

@@ -133,22 +133,6 @@ data:
   # - Information: Informational messages (default for dev)
   # - Debug: Detailed debugging info
   # - Trace: Most detailed information
-  
-  # --------------------------------------------------------------------------
-  # COST OPTIMIZATION NOTES
-  # --------------------------------------------------------------------------
-  # 
-  # What we removed for cost savings:
-  # ✗ Elasticsearch: Saves ~$15-20/month (use kubectl logs instead)
-  # ✗ Application Insights: Saves ~$5-10/month (use native logs)
-  # ✗ External monitoring: Use built-in Kubernetes monitoring
-  # 
-  # What we kept:
-  # ✓ MongoDB: Essential for data persistence
-  # ✓ Redis: Essential for caching and performance
-  # ✓ Service mesh: Essential for microservices communication
-  # 
-  # --------------------------------------------------------------------------
 
 # ==============================================================================
 # HOW THESE VALUES ARE USED IN DEPLOYMENTS

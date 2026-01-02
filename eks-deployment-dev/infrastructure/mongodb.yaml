@@ -40,10 +40,9 @@ spec:
   # --------------------------------------------------------------------------
   # REPLICA CONFIGURATION
   # --------------------------------------------------------------------------
-  replicas: 1                    # Run ONLY 1 pod (cost optimization!)
+  replicas: 1                    # Run ONLY 1 pod
   # Why 1 replica?
   # - Saves compute resources (no redundant pods)
-  # - Saves money (~$30-40/month per replica)
   # - Sufficient for learning and testing
   # 
   # Production would use 3+ replicas for:
@@ -128,7 +127,7 @@ spec:
         # We skip auth for learning simplicity
         
         # ------------------------------------------------------------------
-        # RESOURCE LIMITS - COST OPTIMIZED!
+        # RESOURCE LIMITS
         # ------------------------------------------------------------------
         resources:
           requests:              # Minimum guaranteed resources
@@ -141,14 +140,9 @@ spec:
             cpu: "500m"          # 0.5 CPU cores max
             # "limits" prevent one pod from consuming all node resources
         
-        # Resource Comparison:
-        # Dev (this file):  256Mi/200m to 512Mi/500m  ← Cost-optimized
-        # Production:       1Gi/500m to 4Gi/2000m     ← High performance
-        
         # Why these values?
         # - MongoDB can run with 256 MB for small datasets
         # - 0.2 CPU sufficient for low traffic
-        # - Saves ~70% on compute costs vs production config
         
         # ------------------------------------------------------------------
         # LIVENESS PROBE - Is the container healthy?
@@ -257,7 +251,6 @@ spec:
   # Why ClusterIP?
   # - MongoDB should NOT be accessible from internet (security!)
   # - Only microservices inside cluster need access
-  # - No cost for load balancer
   
   # --------------------------------------------------------------------------
   # SELECTOR - Which pods receive traffic

@@ -30,13 +30,6 @@
 # ------------
 # Internet → ALB → Nginx Proxy → Backend Services (Products/Users/Orders/React)
 # 
-# Cost Optimization for Learning:
-# ------------------------------
-# - ALB costs ~$16/month + $0.008 per LCU-hour
-# - For a few hours: ~$0.10-0.20 per session
-# - Alternative: NodePort (free but less production-like)
-# - Delete ALB immediately after learning to minimize cost
-# 
 # ==============================================================================
 
 ---
@@ -86,7 +79,6 @@ metadata:
     
     alb.ingress.kubernetes.io/healthcheck-interval-seconds: '15'
     # How often to perform health checks
-    # More frequent = faster failure detection, more costs
     
     alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
     # Max time to wait for health check response
@@ -121,7 +113,7 @@ metadata:
     # You can access via HTTP: http://alb-url
     
     # --------------------------------------------------------------------
-    # COST OPTIMIZATION
+    # TARGET GROUP CONFIGURATION
     # --------------------------------------------------------------------
     alb.ingress.kubernetes.io/target-group-attributes: deregistration_delay.timeout_seconds=30
     # Deregister targets faster when pods are deleted (default is 300 seconds)
@@ -132,7 +124,6 @@ metadata:
     # --------------------------------------------------------------------
     alb.ingress.kubernetes.io/tags: Environment=development,Project=microservices-poc,ManagedBy=kubernetes
     # Tags help with:
-    # - Cost tracking (see costs by project)
     # - Resource organization
     # - Access control policies
     # You'll see these tags in AWS Console
@@ -194,7 +185,6 @@ spec:
 # 3. LoadBalancer:
 #    - Creates cloud load balancer (AWS ALB/NLB)
 #    - Gets public IP/DNS
-#    - Costs money (~$16-20/month)
 #    - Use for: Production applications
 #    - Example: http://k8s-xxx.elb.amazonaws.com
 # 
@@ -335,25 +325,3 @@ spec:
 # 
 # ==============================================================================
 
-# ==============================================================================
-# COST BREAKDOWN (AWS ap-south-1)
-# ==============================================================================
-# 
-# ALB Costs:
-# - Fixed: $0.0225/hour = $16.20/month (pro-rated)
-# - LCU: $0.008/hour per LCU (Load Balancer Capacity Unit)
-# 
-# For learning (few hours):
-# - Fixed: $0.0225 × 2 hours = $0.045
-# - LCU: ~$0.016 (minimal traffic)
-# - Total: ~$0.06 for 2 hours
-# 
-# Data Transfer:
-# - Inbound: Free
-# - Outbound: $0.09/GB (first 10 GB free per month)
-# - For learning: Usually free
-# 
-# IMPORTANT: Delete the Ingress after learning to stop charges!
-# kubectl delete ingress microservices-ingress -n microservices-dev
-# 
-# ==============================================================================

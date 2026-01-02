@@ -53,10 +53,9 @@ spec:
   # --------------------------------------------------------------------------
   # REPLICA CONFIGURATION
   # --------------------------------------------------------------------------
-  replicas: 1                    # Single instance (cost optimization)
+  replicas: 1                    # Single instance
   # Why 1 replica?
   # - Sufficient for learning and low traffic
-  # - Saves ~$25-30/month per replica
   # - Cache can handle thousands of requests per second
   # 
   # Production typically uses:
@@ -89,7 +88,6 @@ spec:
         # - 30-40 MB vs 100+ MB for standard image
         # - Faster to pull and deploy
         # - Same Redis functionality
-        # - Lower storage costs
         
         imagePullPolicy: IfNotPresent
         
@@ -144,7 +142,7 @@ spec:
         # - Perfect for caching use case
         
         # ------------------------------------------------------------------
-        # RESOURCE LIMITS - COST OPTIMIZED!
+        # RESOURCE LIMITS
         # ------------------------------------------------------------------
         resources:
           requests:
@@ -407,20 +405,3 @@ spec:
 # 
 # ==============================================================================
 
-# ==============================================================================
-# COST OPTIMIZATION NOTES
-# ==============================================================================
-# 
-# Current configuration cost: ~$0.05/day (~$1.50/month)
-# - 0.1 CPU × $0.0416/hour = ~$3/month
-# - But shared with other pods on same node
-# - Actual cost is portion of node cost
-# 
-# Savings vs production:
-# - Memory: 256 MB vs 2 GB (87% reduction)
-# - CPU: 0.1 cores vs 1 core (90% reduction)
-# - No Redis Cluster (saves 2+ additional nodes)
-# - Total savings: ~$50-100/month
-# 
-# For a few hours of learning: essentially free!
-# ==============================================================================

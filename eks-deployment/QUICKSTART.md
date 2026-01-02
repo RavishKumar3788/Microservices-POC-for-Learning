@@ -161,18 +161,6 @@ eksctl delete cluster --name microservices-eks --region ap-south-1
 - Implement network policies
 - Set up backup strategy
 
-## Cost Information
-
-**Estimated cost:** ~$209/month
-- EKS Control Plane: $73/month
-- 3x t3.medium nodes: ~$100/month
-- Storage & Load Balancer: ~$36/month
-
-**To reduce costs:**
-- Use Spot instances
-- Scale down nodes when not in use
-- Use smaller instance types for dev/test
-
 ---
 
 For detailed information, see [README.md](README.md)
